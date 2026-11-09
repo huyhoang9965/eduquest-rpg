@@ -1,0 +1,1742 @@
+[
+  {
+    "id": "qs-1793933590990",
+    "title": "Toán 10",
+    "subject": "math",
+    "grade": 6,
+    "topic": "Chủ đề tùy chỉnh",
+    "description": "Đã nhập thành công 30 câu hỏi.",
+    "difficulty": "medium",
+    "status": "published",
+    "createdAt": "2026-11-06T02:53:10.990Z",
+    "updatedAt": "2026-11-06T02:53:10.990Z",
+    "version": 1,
+    "questions": [
+      {
+        "id": "q-1",
+        "question": "Câu 1: Một lớp có 45 học sinh. Trong đó 28 học sinh tham gia câu lạc bộ Toán, 24 học sinh tham gia câu lạc bộ Tiếng Anh và 5 học sinh không tham gia câu lạc bộ nào. Hỏi có bao nhiêu học sinh tham gia cả hai câu lạc bộ?",
+        "options": [
+          "7 học sinh",
+          "10 học sinh",
+          "12 học sinh",
+          "15 học sinh"
+        ],
+        "correctAnswer": "12 học sinh",
+        "explanation": "Số học sinh tham gia ít nhất một câu lạc bộ là 45 - 5 = 40. Theo công thức cộng tập hợp, số học sinh tham gia cả hai là 28 + 24 - 40 = 12.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-2",
+        "question": "Câu 2: Một cơ sở sản xuất có chi phí C(x) = 200x + 10000 và doanh thu R(x) = 500x, đơn vị đều là nghìn đồng. Hỏi cần bán ít nhất bao nhiêu sản phẩm để đạt lợi nhuận từ 5000 nghìn đồng trở lên?",
+        "options": [
+          "40 sản phẩm",
+          "45 sản phẩm",
+          "50 sản phẩm",
+          "60 sản phẩm"
+        ],
+        "correctAnswer": "50 sản phẩm",
+        "explanation": "Lợi nhuận P(x) = R(x) - C(x) = 300x - 10000. Yêu cầu P(x) ≥ 5000 nên 300x ≥ 15000, suy ra x ≥ 50.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-3",
+        "question": "Câu 3: Hai gói dịch vụ có chi phí lần lượt là A(x) = 100000 + 2000x và B(x) = 50000 + 3000x đồng. Với x là số nguyên từ 10 đến 80, có bao nhiêu giá trị x để gói B rẻ hơn gói A?",
+        "options": [
+          "39 giá trị",
+          "40 giá trị",
+          "41 giá trị",
+          "50 giá trị"
+        ],
+        "correctAnswer": "40 giá trị",
+        "explanation": "Điều kiện B(x) < A(x) tương đương 50000 + 3000x < 100000 + 2000x, suy ra x < 50. Các số nguyên từ 10 đến 49 có 40 giá trị.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-4",
+        "question": "Câu 4: Có bao nhiêu giá trị nguyên của x để biểu thức √(x - 3) + √(11 - x) xác định?",
+        "options": [
+          "7 giá trị",
+          "8 giá trị",
+          "9 giá trị",
+          "10 giá trị"
+        ],
+        "correctAnswer": "9 giá trị",
+        "explanation": "Điều kiện xác định là x - 3 ≥ 0 và 11 - x ≥ 0. Suy ra 3 ≤ x ≤ 11. Có 9 số nguyên thỏa mãn.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-5",
+        "question": "Câu 5: Có bao nhiêu giá trị nguyên của x thuộc đoạn từ 0 đến 8 để biểu thức √(2x - 4)/(x - 5) xác định?",
+        "options": [
+          "5 giá trị",
+          "6 giá trị",
+          "7 giá trị",
+          "8 giá trị"
+        ],
+        "correctAnswer": "6 giá trị",
+        "explanation": "Điều kiện là 2x - 4 ≥ 0 và x khác 5. Trong đoạn từ 0 đến 8, các giá trị nguyên thỏa mãn là 2, 3, 4, 6, 7, 8. Vậy có 6 giá trị.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-6",
+        "question": "Câu 6: Độ cao của một quả bóng sau t giây được mô tả bởi h(t) = -5t² + 20t + 1, đơn vị mét. Độ cao lớn nhất mà quả bóng đạt được là bao nhiêu?",
+        "options": [
+          "18 m",
+          "20 m",
+          "21 m",
+          "25 m"
+        ],
+        "correctAnswer": "21 m",
+        "explanation": "Parabol có hệ số a = -5 nên đạt giá trị lớn nhất tại t = -20/(2 × -5) = 2. Khi đó h(2) = -5 × 4 + 40 + 1 = 21 m.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-7",
+        "question": "Câu 7: Một mái vòm có mặt cắt được mô tả bởi hàm số y = -x² + 6x + 4. Độ cao lớn nhất của mái vòm so với trục hoành là bao nhiêu?",
+        "options": [
+          "10",
+          "12",
+          "13",
+          "15"
+        ],
+        "correctAnswer": "13",
+        "explanation": "Parabol quay xuống và có đỉnh tại x = -6/(2 × -1) = 3. Thay vào hàm số được y = -9 + 18 + 4 = 13.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-8",
+        "question": "Câu 8: Lợi nhuận của một cửa hàng được mô tả bởi P(x) = -2x² + 120x - 1000, đơn vị nghìn đồng. Lợi nhuận lớn nhất cửa hàng có thể đạt được theo mô hình là bao nhiêu?",
+        "options": [
+          "600 nghìn đồng",
+          "800 nghìn đồng",
+          "900 nghìn đồng",
+          "1000 nghìn đồng"
+        ],
+        "correctAnswer": "800 nghìn đồng",
+        "explanation": "Hàm bậc hai đạt cực đại tại x = -120/(2 × -2) = 30. Thay x = 30 vào P(x), ta được -1800 + 3600 - 1000 = 800 nghìn đồng.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-9",
+        "question": "Câu 9: Một người có 60 m hàng rào để làm khu vườn hình chữ nhật. Nếu dùng toàn bộ hàng rào cho chu vi khu vườn thì diện tích lớn nhất có thể đạt được là bao nhiêu?",
+        "options": [
+          "200 m²",
+          "210 m²",
+          "225 m²",
+          "250 m²"
+        ],
+        "correctAnswer": "225 m²",
+        "explanation": "Với chu vi 60 m, tổng chiều dài và chiều rộng bằng 30 m. Diện tích lớn nhất khi hai cạnh bằng nhau và đều bằng 15 m. Khi đó diện tích là 15 × 15 = 225 m².",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-10",
+        "question": "Câu 10: Một doanh nghiệp có lợi nhuận P(x) = -x² + 12x - 20. Với x là số nguyên không âm, có bao nhiêu giá trị x để doanh nghiệp không bị lỗ?",
+        "options": [
+          "7 giá trị",
+          "8 giá trị",
+          "9 giá trị",
+          "10 giá trị"
+        ],
+        "correctAnswer": "9 giá trị",
+        "explanation": "Điều kiện không lỗ là -x² + 12x - 20 ≥ 0. Tương đương (x - 2)(x - 10) ≤ 0 nên 2 ≤ x ≤ 10. Có 9 giá trị nguyên.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-11",
+        "question": "Câu 11: Parabol y = x² - 4x + m cắt trục hoành tại hai điểm có hoành độ cách nhau 6 đơn vị. Giá trị của m bằng bao nhiêu?",
+        "options": [
+          "-9",
+          "-5",
+          "0",
+          "5"
+        ],
+        "correctAnswer": "-5",
+        "explanation": "Phương trình giao điểm là x² - 4x + m = 0, có hai nghiệm x = 2 ± √(4 - m). Khoảng cách giữa hai nghiệm bằng 2√(4 - m) = 6. Suy ra 4 - m = 9 nên m = -5.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-12",
+        "question": "Câu 12: Mặt cắt một cây cầu có dạng parabol h(x) = -0,5x² + 4x. Tại độ cao 6 m, khoảng cách theo phương ngang giữa hai điểm của mái vòm là bao nhiêu?",
+        "options": [
+          "2 m",
+          "3 m",
+          "4 m",
+          "6 m"
+        ],
+        "correctAnswer": "4 m",
+        "explanation": "Giải phương trình -0,5x² + 4x = 6. Nhân hai vế với -2 được x² - 8x + 12 = 0. Hai nghiệm là x = 2 và x = 6, nên khoảng cách là 4 m.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-13",
+        "question": "Câu 13: Một xưởng sản xuất x sản phẩm loại A và y sản phẩm loại B với các ràng buộc 2x + y ≤ 100, x + 2y ≤ 80, x ≥ 0, y ≥ 0. Lợi nhuận mỗi sản phẩm A là 30 nghìn đồng và B là 20 nghìn đồng. Lợi nhuận lớn nhất là bao nhiêu?",
+        "options": [
+          "1400 nghìn đồng",
+          "1500 nghìn đồng",
+          "1600 nghìn đồng",
+          "1800 nghìn đồng"
+        ],
+        "correctAnswer": "1600 nghìn đồng",
+        "explanation": "Xét hàm F = 30x + 20y tại các đỉnh miền nghiệm. Hai đường biên cắt nhau tại (40",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-14",
+        "question": "Câu 14: Một bài toán tối ưu có các điều kiện x + y ≤ 12, 2x + y ≤ 18, x ≥ 0 và y ≥ 0. Giá trị lớn nhất của F = 3x + 2y là bao nhiêu?",
+        "options": [
+          "24",
+          "27",
+          "30",
+          "36"
+        ],
+        "correctAnswer": "30",
+        "explanation": "Miền nghiệm có các đỉnh (0",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-15",
+        "question": "Câu 15: Cho x và y không âm thỏa mãn 2x + y ≤ 10 và x + 3y ≤ 15. Giá trị lớn nhất của F = 4x + 3y bằng bao nhiêu?",
+        "options": [
+          "20",
+          "22",
+          "24",
+          "27"
+        ],
+        "correctAnswer": "24",
+        "explanation": "Hai đường thẳng 2x + y = 10 và x + 3y = 15 cắt nhau tại (3",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-16",
+        "question": "Câu 16: Một cơ sở cần chọn hai lượng nguyên liệu x và y không âm, thỏa mãn x + y ≥ 8 và x + 2y ≥ 10. Chi phí tương ứng là F = 4x + 3y. Chi phí nhỏ nhất bằng bao nhiêu?",
+        "options": [
+          "20",
+          "24",
+          "28",
+          "30"
+        ],
+        "correctAnswer": "24",
+        "explanation": "Xét các đỉnh của miền nghiệm gồm (0",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-17",
+        "question": "Câu 17: Trong mặt phẳng tọa độ, cho A(2",
+        "options": [
+          "-1), B(8",
+          "5) và C(2",
+          "6). Gọi M là trung điểm của AB. Độ dài đoạn MC bằng bao nhiêu?",
+          "4"
+        ],
+        "correctAnswer": "-1), B(8",
+        "explanation": "5*",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-18",
+        "question": "Câu 18: Trong mặt phẳng tọa độ Oxy, cho tam giác ABC với A(1",
+        "options": [
+          "2), B(5",
+          "3), C(3",
+          "7). Diện tích tam giác ABC bằng bao nhiêu?",
+          "6"
+        ],
+        "correctAnswer": "2), B(5",
+        "explanation": "8",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-19",
+        "question": "Câu 19: Một tam giác có hai cạnh dài 7 cm và 8 cm, góc xen giữa hai cạnh bằng 60 độ. Diện tích tam giác bằng bao nhiêu?",
+        "options": [
+          "14 cm²",
+          "14√3 cm²",
+          "28 cm²",
+          "28√3 cm²"
+        ],
+        "correctAnswer": "14√3 cm²",
+        "explanation": "Diện tích theo hai cạnh và góc xen giữa là S = 1/2 × 7 × 8 × sin60°. Vì sin60° = √3/2 nên S = 14√3 cm².",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-20",
+        "question": "Câu 20: Một tam giác có hai cạnh dài 6 cm và 8 cm, góc xen giữa bằng 60 độ. Độ dài cạnh còn lại là bao nhiêu?",
+        "options": [
+          "2√7 cm",
+          "2√13 cm",
+          "7 cm",
+          "10 cm"
+        ],
+        "correctAnswer": "2√13 cm",
+        "explanation": "Theo định lý cosin, cạnh còn lại có bình phương bằng 6² + 8² - 2 × 6 × 8 × cos60° = 52. Vậy độ dài cạnh là √52 = 2√13 cm.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-21",
+        "question": "Câu 21: Một tam giác có ba cạnh lần lượt là 13 cm, 14 cm và 15 cm. Bán kính đường tròn nội tiếp tam giác bằng bao nhiêu?",
+        "options": [
+          "3 cm",
+          "4 cm",
+          "5 cm",
+          "6 cm"
+        ],
+        "correctAnswer": "4 cm",
+        "explanation": "Nửa chu vi p = 21 cm. Theo công thức Heron, diện tích S = √(21 × 8 × 7 × 6) = 84 cm². Bán kính nội tiếp r = S/p = 84/21 = 4 cm.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-22",
+        "question": "Câu 22: Cho ba đỉnh liên tiếp của hình bình hành ABCD là A(1",
+        "options": [
+          "2), B(5",
+          "3), C(7",
+          "7). Tọa độ đỉnh D là bao nhiêu?",
+          "(2"
+        ],
+        "correctAnswer": "2), B(5",
+        "explanation": "5)",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-23",
+        "question": "Câu 23: Cho hai vectơ u = (m",
+        "options": [
+          "2) và v = (3",
+          "-6). Giá trị của m để hai vectơ vuông góc là bao nhiêu?",
+          "2",
+          "3"
+        ],
+        "correctAnswer": "2) và v = (3",
+        "explanation": "4*",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-24",
+        "question": "Câu 24: Trong mặt phẳng tọa độ Oxy, đường thẳng d đi qua A(1",
+        "options": [
+          "2) và B(5",
+          "6). Khoảng cách từ M(3",
+          "1) đến đường thẳng d bằng bao nhiêu?",
+          "√2/2"
+        ],
+        "correctAnswer": "2) và B(5",
+        "explanation": "3√2/2*",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-25",
+        "question": "Câu 25: Một bộ dữ liệu gồm năm giá trị 5, 7, 8, 10 và 20. Nếu thay giá trị 20 bằng một số x thì số trung bình cộng mới bằng 9. Giá trị của x là bao nhiêu?",
+        "options": [
+          "12",
+          "14",
+          "15",
+          "18"
+        ],
+        "correctAnswer": "15",
+        "explanation": "Tổng năm số mới bằng 9 × 5 = 45. Tổng bốn số đầu là 5 + 7 + 8 + 10 = 30. Vậy x = 45 - 30 = 15.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-26",
+        "question": "Câu 26: Cho mẫu số liệu 2, 4, 6, 8, 10. Phương sai của mẫu số liệu theo công thức chia cho số phần tử bằng bao nhiêu?",
+        "options": [
+          "4",
+          "6",
+          "8",
+          "10"
+        ],
+        "correctAnswer": "8",
+        "explanation": "Số trung bình bằng 6. Tổng bình phương độ lệch là 16 + 4 + 0 + 4 + 16 = 40. Phương sai bằng 40/5 = 8.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-27",
+        "question": "Câu 27: Một hộp có 5 viên bi đỏ và 3 viên bi xanh. Lấy ngẫu nhiên đồng thời 2 viên bi. Xác suất để hai viên bi cùng màu là bao nhiêu?",
+        "options": [
+          "3/8",
+          "5/14",
+          "13/28",
+          "15/28"
+        ],
+        "correctAnswer": "13/28",
+        "explanation": "Tổng số cách lấy 2 viên là C(8",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-28",
+        "question": "Câu 28: Một nhóm có 5 học sinh nam và 4 học sinh nữ. Chọn ngẫu nhiên 2 học sinh. Xác suất chọn được một nam và một nữ là bao nhiêu?",
+        "options": [
+          "4/9",
+          "5/9",
+          "2/3",
+          "7/9"
+        ],
+        "correctAnswer": "5/9",
+        "explanation": "Tổng số cách chọn là C(9",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-29",
+        "question": "Câu 29: Từ các chữ số 1, 2, 3, 4, 5 có thể lập được bao nhiêu số tự nhiên có ba chữ số khác nhau và lớn hơn 300?",
+        "options": [
+          "24 số",
+          "36 số",
+          "48 số",
+          "60 số"
+        ],
+        "correctAnswer": "36 số",
+        "explanation": "Chữ số hàng trăm có 3 lựa chọn là 3, 4 hoặc 5. Hàng chục còn 4 lựa chọn và hàng đơn vị còn 3 lựa chọn. Có 3 × 4 × 3 = 36 số.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-30",
+        "question": "Câu 30: Một lớp có 6 học sinh nam và 4 học sinh nữ. Cần chọn một ban đại diện gồm 3 học sinh sao cho có ít nhất một học sinh nữ. Có bao nhiêu cách chọn?",
+        "options": [
+          "80 cách",
+          "90 cách",
+          "100 cách",
+          "110 cách"
+        ],
+        "correctAnswer": "100 cách",
+        "explanation": "Tổng số cách chọn 3 học sinh từ 10 người là C(10",
+        "difficulty": "medium",
+        "damage": 30
+      }
+    ]
+  },
+  {
+    "id": "qs-1793880103583",
+    "title": "ot4",
+    "subject": "math",
+    "grade": 6,
+    "topic": "Chủ đề tùy chỉnh",
+    "description": "Đã nhập thành công 30 câu hỏi.",
+    "difficulty": "medium",
+    "status": "published",
+    "createdAt": "2026-11-05T12:01:43.583Z",
+    "updatedAt": "2026-11-05T12:01:54.529Z",
+    "version": 3,
+    "questions": [
+      {
+        "id": "q-1",
+        "question": "Câu 1: Chữ số hàng chục nghìn của số 407 305 là chữ số nào?",
+        "options": [
+          "4",
+          "0",
+          "7",
+          "3"
+        ],
+        "correctAnswer": "0",
+        "explanation": "Số 407 305 có chữ số 4 ở hàng trăm nghìn, 0 ở hàng chục nghìn và 7 ở hàng nghìn.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-2",
+        "question": "Câu 2: Số gồm 6 trăm nghìn, 3 chục nghìn, 5 trăm và 8 đơn vị là số nào?",
+        "options": [
+          "630 058",
+          "630 508",
+          "603 508",
+          "635 008"
+        ],
+        "correctAnswer": "630 508",
+        "explanation": "Ta có 600 000 + 30 000 + 500 + 8 = 630 508.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-3",
+        "question": "Câu 3: Số nào lớn nhất trong các số sau?",
+        "options": [
+          "78 945",
+          "79 548",
+          "79 854",
+          "78 954"
+        ],
+        "correctAnswer": "79 854",
+        "explanation": "So sánh các chữ số từ trái sang phải, ta thấy 79 854 là số lớn nhất.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-4",
+        "question": "Câu 4: Kết quả của phép tính 36 725 + 28 439 là bao nhiêu?",
+        "options": [
+          "65 154",
+          "65 164",
+          "64 164",
+          "66 164"
+        ],
+        "correctAnswer": "65 164",
+        "explanation": "Đặt tính rồi cộng theo từng hàng, ta được 36 725 + 28 439 = 65 164.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-5",
+        "question": "Câu 5: Kết quả của phép tính 90 000 - 37 658 là bao nhiêu?",
+        "options": [
+          "52 342",
+          "53 342",
+          "52 432",
+          "62 342"
+        ],
+        "correctAnswer": "52 342",
+        "explanation": "Thực hiện phép trừ ta được 90 000 - 37 658 = 52 342.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-6",
+        "question": "Câu 6: Tính 236 × 4.",
+        "options": [
+          "924",
+          "944",
+          "964",
+          "844"
+        ],
+        "correctAnswer": "944",
+        "explanation": "Ta có 236 × 4 = 944.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-7",
+        "question": "Câu 7: Kết quả của phép chia 1 248 : 4 là bao nhiêu?",
+        "options": [
+          "302",
+          "312",
+          "322",
+          "412"
+        ],
+        "correctAnswer": "312",
+        "explanation": "Ta có 1 248 : 4 = 312 vì 312 × 4 = 1 248.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-8",
+        "question": "Câu 8: Tính 35 × 20.",
+        "options": [
+          "70",
+          "700",
+          "750",
+          "350"
+        ],
+        "correctAnswer": "700",
+        "explanation": "Ta có 35 × 20 = 35 × 2 × 10 = 700.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-9",
+        "question": "Câu 9: Kết quả của phép tính 840 : 7 là bao nhiêu?",
+        "options": [
+          "110",
+          "120",
+          "130",
+          "140"
+        ],
+        "correctAnswer": "120",
+        "explanation": "Ta có 840 : 7 = 120 vì 120 × 7 = 840.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-10",
+        "question": "Câu 10: Tính 125 × 8.",
+        "options": [
+          "900",
+          "1 000",
+          "1 125",
+          "1 250"
+        ],
+        "correctAnswer": "1 000",
+        "explanation": "Ta có 125 × 8 = 1 000.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-11",
+        "question": "Câu 11: Kết quả của phép tính 6 000 : 100 là bao nhiêu?",
+        "options": [
+          "600",
+          "60",
+          "6",
+          "6 000"
+        ],
+        "correctAnswer": "60",
+        "explanation": "Khi chia 6 000 cho 100, ta được 60.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-12",
+        "question": "Câu 12: Giá trị của biểu thức 48 + 6 × 7 là bao nhiêu?",
+        "options": [
+          "84",
+          "90",
+          "132",
+          "96"
+        ],
+        "correctAnswer": "90",
+        "explanation": "Thực hiện phép nhân trước: 6 × 7 = 42. Sau đó tính 48 + 42 = 90.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-13",
+        "question": "Câu 13: Giá trị của biểu thức (125 + 75) × 4 là bao nhiêu?",
+        "options": [
+          "600",
+          "700",
+          "800",
+          "900"
+        ],
+        "correctAnswer": "800",
+        "explanation": "Tính trong ngoặc trước: 125 + 75 = 200. Sau đó 200 × 4 = 800.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-14",
+        "question": "Câu 14: 3 giờ 25 phút bằng bao nhiêu phút?",
+        "options": [
+          "185 phút",
+          "205 phút",
+          "225 phút",
+          "325 phút"
+        ],
+        "correctAnswer": "205 phút",
+        "explanation": "Vì 1 giờ bằng 60 phút nên 3 giờ 25 phút = 3 × 60 + 25 = 205 phút.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-15",
+        "question": "Câu 15: 2 tạ bằng bao nhiêu ki-lô-gam?",
+        "options": [
+          "20 kg",
+          "200 kg",
+          "2 000 kg",
+          "100 kg"
+        ],
+        "correctAnswer": "200 kg",
+        "explanation": "Vì 1 tạ = 100 kg nên 2 tạ = 200 kg.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-16",
+        "question": "Câu 16: 3 km 450 m bằng bao nhiêu mét?",
+        "options": [
+          "345 m",
+          "3 045 m",
+          "3 450 m",
+          "3 405 m"
+        ],
+        "correctAnswer": "3 450 m",
+        "explanation": "Vì 3 km = 3 000 m nên 3 km 450 m = 3 450 m.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-17",
+        "question": "Câu 17: 2 mét vuông bằng bao nhiêu đề-xi-mét vuông?",
+        "options": [
+          "20 dm²",
+          "200 dm²",
+          "2 000 dm²",
+          "2 dm²"
+        ],
+        "correctAnswer": "200 dm²",
+        "explanation": "Vì 1 m² = 100 dm² nên 2 m² = 200 dm².",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-18",
+        "question": "Câu 18: Một hình chữ nhật có chiều dài 12 cm và chiều rộng 7 cm. Chu vi hình chữ nhật là bao nhiêu?",
+        "options": [
+          "19 cm",
+          "38 cm",
+          "84 cm",
+          "40 cm"
+        ],
+        "correctAnswer": "38 cm",
+        "explanation": "Chu vi hình chữ nhật là (12 + 7) × 2 = 38 cm.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-19",
+        "question": "Câu 19: Một hình chữ nhật có chiều dài 15 cm và chiều rộng 8 cm. Diện tích hình chữ nhật là bao nhiêu?",
+        "options": [
+          "23 cm²",
+          "46 cm²",
+          "120 cm²",
+          "180 cm²"
+        ],
+        "correctAnswer": "120 cm²",
+        "explanation": "Diện tích hình chữ nhật là 15 × 8 = 120 cm².",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-20",
+        "question": "Câu 20: Một hình vuông có chu vi 36 cm. Độ dài một cạnh của hình vuông là bao nhiêu?",
+        "options": [
+          "6 cm",
+          "9 cm",
+          "12 cm",
+          "18 cm"
+        ],
+        "correctAnswer": "9 cm",
+        "explanation": "Hình vuông có 4 cạnh bằng nhau nên độ dài một cạnh là 36 : 4 = 9 cm.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-21",
+        "question": "Câu 21: Góc vuông có số đo bằng bao nhiêu độ?",
+        "options": [
+          "45 độ",
+          "60 độ",
+          "90 độ",
+          "180 độ"
+        ],
+        "correctAnswer": "90 độ",
+        "explanation": "Góc vuông có số đo bằng 90 độ.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-22",
+        "question": "Câu 22: Trung bình cộng của ba số 12, 16 và 20 là bao nhiêu?",
+        "options": [
+          "14",
+          "16",
+          "18",
+          "20"
+        ],
+        "correctAnswer": "16",
+        "explanation": "Trung bình cộng là (12 + 16 + 20) : 3 = 48 : 3 = 16.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-23",
+        "question": "Câu 23: Phân số nào sau đây lớn hơn 1/2?",
+        "options": [
+          "1/3",
+          "2/5",
+          "3/4",
+          "1/4"
+        ],
+        "correctAnswer": "3/4",
+        "explanation": "Vì 3/4 lớn hơn 1/2, còn các phân số 1/3, 2/5 và 1/4 đều nhỏ hơn 1/2.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-24",
+        "question": "Câu 24: Kết quả của phép tính 3/8 + 2/8 là phân số nào?",
+        "options": [
+          "5/16",
+          "5/8",
+          "1/8",
+          "6/8"
+        ],
+        "correctAnswer": "5/8",
+        "explanation": "Hai phân số có cùng mẫu số nên cộng các tử số và giữ nguyên mẫu số: 3/8 + 2/8 = 5/8.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-25",
+        "question": "Câu 25: Kết quả rút gọn của phép tính 7/9 - 4/9 là phân số nào?",
+        "options": [
+          "1/3",
+          "2/9",
+          "4/9",
+          "7/9"
+        ],
+        "correctAnswer": "1/3",
+        "explanation": "Ta có 7/9 - 4/9 = 3/9. Rút gọn 3/9 được 1/3.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-26",
+        "question": "Câu 26: Tính 2/3 của 18.",
+        "options": [
+          "6",
+          "9",
+          "12",
+          "15"
+        ],
+        "correctAnswer": "12",
+        "explanation": "Ta tính 18 : 3 × 2 = 12. Vậy 2/3 của 18 là 12.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-27",
+        "question": "Câu 27: Một quyển vở có giá 7 000 đồng. Mua 6 quyển vở cùng loại cần trả bao nhiêu tiền?",
+        "options": [
+          "35 000 đồng",
+          "42 000 đồng",
+          "48 000 đồng",
+          "49 000 đồng"
+        ],
+        "correctAnswer": "42 000 đồng",
+        "explanation": "Số tiền cần trả là 7 000 × 6 = 42 000 đồng.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-28",
+        "question": "Câu 28: Một cửa hàng có 120 kg gạo. Buổi sáng bán 35 kg và buổi chiều bán 28 kg. Hỏi cửa hàng còn lại bao nhiêu ki-lô-gam gạo?",
+        "options": [
+          "47 kg",
+          "57 kg",
+          "63 kg",
+          "67 kg"
+        ],
+        "correctAnswer": "57 kg",
+        "explanation": "Tổng số gạo đã bán là 35 + 28 = 63 kg. Số gạo còn lại là 120 - 63 = 57 kg.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-29",
+        "question": "Câu 29: Tìm x biết x × 6 = 348.",
+        "options": [
+          "56",
+          "58",
+          "62",
+          "64"
+        ],
+        "correctAnswer": "58",
+        "explanation": "Muốn tìm thừa số chưa biết, lấy tích chia cho thừa số đã biết: x = 348 : 6 = 58.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-30",
+        "question": "Câu 30: Một trang trại thu hoạch được 4 sọt cam, mỗi sọt có 25 kg cam. Trang trại đã bán 37 kg cam. Hỏi trang trại còn lại bao nhiêu ki-lô-gam cam?",
+        "options": [
+          "53 kg",
+          "63 kg",
+          "67 kg",
+          "73 kg"
+        ],
+        "correctAnswer": "63 kg",
+        "explanation": "Tổng số cam thu hoạch là 4 × 25 = 100 kg. Số cam còn lại là 100 - 37 = 63 kg.",
+        "difficulty": "medium",
+        "damage": 30
+      }
+    ]
+  },
+  {
+    "id": "qs-1793880089655",
+    "title": "Ôn tập lớp 4",
+    "subject": "math",
+    "grade": 4,
+    "topic": "Chủ đề tổng hợp",
+    "description": "Bộ câu hỏi ôn tập toán lớp 4 chuẩn 30 câu hỏi đa dạng kiến thức.",
+    "difficulty": "medium",
+    "status": "published",
+    "createdAt": "2026-11-05T12:01:29.655Z",
+    "updatedAt": "2026-11-05T12:01:29.655Z",
+    "version": 1,
+    "questions": [
+      {
+        "id": "q-ontap4-1",
+        "question": "Câu 1: Số gồm 5 chục nghìn, 2 nghìn, 8 trăm và 4 đơn vị viết là: (Biến thể 1)",
+        "options": [
+          "52 804",
+          "52 840",
+          "50 284",
+          "52 084"
+        ],
+        "correctAnswer": "52 804",
+        "explanation": "5 chục nghìn (50 000) + 2 nghìn (2 000) + 8 trăm (800) + 4 đơn vị = 52 804",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-2",
+        "question": "Câu 2: Giá trị của chữ số 7 trong số 872 315 là: (Biến thể 1)",
+        "options": [
+          "70 000",
+          "7 000",
+          "700",
+          "700 000"
+        ],
+        "correctAnswer": "70 000",
+        "explanation": "Chữ số 7 ở hàng chục nghìn nên có giá trị là 70 000.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-3",
+        "question": "Câu 3: Kết quả của phép tính: 45 612 + 23 145 = ? (Biến thể 1)",
+        "options": [
+          "68 757",
+          "68 747",
+          "67 757",
+          "69 757"
+        ],
+        "correctAnswer": "68 757",
+        "explanation": "45 612 + 23 145 = 68 757",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-4",
+        "question": "Câu 4: Kết quả của phép tính: 85 940 - 32 418 = ? (Biến thể 1)",
+        "options": [
+          "53 522",
+          "53 532",
+          "52 522",
+          "54 522"
+        ],
+        "correctAnswer": "53 522",
+        "explanation": "85 940 - 32 418 = 53 522",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-5",
+        "question": "Câu 5: Một hình vuông có chu vi 36 cm. Diện tích của hình vuông đó là: (Biến thể 1)",
+        "options": [
+          "81 cm²",
+          "36 cm²",
+          "72 cm²",
+          "18 cm²"
+        ],
+        "correctAnswer": "81 cm²",
+        "explanation": "Cạnh hình vuông là: 36 : 4 = 9 cm. Diện tích = 9 x 9 = 81 cm².",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-6",
+        "question": "Câu 6: Phép tính: 25 x 4 + 150 = ? (Biến thể 1)",
+        "options": [
+          "250",
+          "200",
+          "300",
+          "150"
+        ],
+        "correctAnswer": "250",
+        "explanation": "25 x 4 = 100, 100 + 150 = 250.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-7",
+        "question": "Câu 7: Trung bình cộng của ba số: 15, 25, 50 là: (Biến thể 1)",
+        "options": [
+          "30",
+          "25",
+          "35",
+          "40"
+        ],
+        "correctAnswer": "30",
+        "explanation": "(15 + 25 + 50) : 3 = 90 : 3 = 30.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-8",
+        "question": "Câu 8: Một ô tô chạy trong 3 giờ được 150 km. Vận tốc trung bình của ô tô là: (Biến thể 1)",
+        "options": [
+          "50 km/h",
+          "45 km/h",
+          "60 km/h",
+          "40 km/h"
+        ],
+        "correctAnswer": "50 km/h",
+        "explanation": "150 : 3 = 50 km/h.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-9",
+        "question": "Câu 9: Phân số 3/5 bằng phân số nào dưới đây? (Biến thể 1)",
+        "options": [
+          "6/10",
+          "9/20",
+          "5/3",
+          "6/15"
+        ],
+        "correctAnswer": "6/10",
+        "explanation": "Nhân cả tử và mẫu với 2 ta được: (3x2)/(5x2) = 6/10.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-10",
+        "question": "Câu 10: Rút gọn phân số 18/24 về phân số tối giản ta được: (Biến thể 1)",
+        "options": [
+          "3/4",
+          "2/3",
+          "4/5",
+          "1/2"
+        ],
+        "correctAnswer": "3/4",
+        "explanation": "Chia cả tử và mẫu cho 6: 18:6=3, 24:6=4 => 3/4.",
+        "difficulty": "easy",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-11",
+        "question": "Câu 11: Số gồm 5 chục nghìn, 2 nghìn, 8 trăm và 4 đơn vị viết là: (Biến thể 2)",
+        "options": [
+          "52 804",
+          "52 840",
+          "50 284",
+          "52 084"
+        ],
+        "correctAnswer": "52 804",
+        "explanation": "5 chục nghìn (50 000) + 2 nghìn (2 000) + 8 trăm (800) + 4 đơn vị = 52 804",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-12",
+        "question": "Câu 12: Giá trị của chữ số 7 trong số 872 315 là: (Biến thể 2)",
+        "options": [
+          "70 000",
+          "7 000",
+          "700",
+          "700 000"
+        ],
+        "correctAnswer": "70 000",
+        "explanation": "Chữ số 7 ở hàng chục nghìn nên có giá trị là 70 000.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-13",
+        "question": "Câu 13: Kết quả của phép tính: 45 612 + 23 145 = ? (Biến thể 2)",
+        "options": [
+          "68 757",
+          "68 747",
+          "67 757",
+          "69 757"
+        ],
+        "correctAnswer": "68 757",
+        "explanation": "45 612 + 23 145 = 68 757",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-14",
+        "question": "Câu 14: Kết quả của phép tính: 85 940 - 32 418 = ? (Biến thể 2)",
+        "options": [
+          "53 522",
+          "53 532",
+          "52 522",
+          "54 522"
+        ],
+        "correctAnswer": "53 522",
+        "explanation": "85 940 - 32 418 = 53 522",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-15",
+        "question": "Câu 15: Một hình vuông có chu vi 36 cm. Diện tích của hình vuông đó là: (Biến thể 2)",
+        "options": [
+          "81 cm²",
+          "36 cm²",
+          "72 cm²",
+          "18 cm²"
+        ],
+        "correctAnswer": "81 cm²",
+        "explanation": "Cạnh hình vuông là: 36 : 4 = 9 cm. Diện tích = 9 x 9 = 81 cm².",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-16",
+        "question": "Câu 16: Phép tính: 25 x 4 + 150 = ? (Biến thể 2)",
+        "options": [
+          "250",
+          "200",
+          "300",
+          "150"
+        ],
+        "correctAnswer": "250",
+        "explanation": "25 x 4 = 100, 100 + 150 = 250.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-17",
+        "question": "Câu 17: Trung bình cộng của ba số: 15, 25, 50 là: (Biến thể 2)",
+        "options": [
+          "30",
+          "25",
+          "35",
+          "40"
+        ],
+        "correctAnswer": "30",
+        "explanation": "(15 + 25 + 50) : 3 = 90 : 3 = 30.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-18",
+        "question": "Câu 18: Một ô tô chạy trong 3 giờ được 150 km. Vận tốc trung bình của ô tô là: (Biến thể 2)",
+        "options": [
+          "50 km/h",
+          "45 km/h",
+          "60 km/h",
+          "40 km/h"
+        ],
+        "correctAnswer": "50 km/h",
+        "explanation": "150 : 3 = 50 km/h.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-19",
+        "question": "Câu 19: Phân số 3/5 bằng phân số nào dưới đây? (Biến thể 2)",
+        "options": [
+          "6/10",
+          "9/20",
+          "5/3",
+          "6/15"
+        ],
+        "correctAnswer": "6/10",
+        "explanation": "Nhân cả tử và mẫu với 2 ta được: (3x2)/(5x2) = 6/10.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-20",
+        "question": "Câu 20: Rút gọn phân số 18/24 về phân số tối giản ta được: (Biến thể 2)",
+        "options": [
+          "3/4",
+          "2/3",
+          "4/5",
+          "1/2"
+        ],
+        "correctAnswer": "3/4",
+        "explanation": "Chia cả tử và mẫu cho 6: 18:6=3, 24:6=4 => 3/4.",
+        "difficulty": "medium",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-21",
+        "question": "Câu 21: Số gồm 5 chục nghìn, 2 nghìn, 8 trăm và 4 đơn vị viết là: (Biến thể 3)",
+        "options": [
+          "52 804",
+          "52 840",
+          "50 284",
+          "52 084"
+        ],
+        "correctAnswer": "52 804",
+        "explanation": "5 chục nghìn (50 000) + 2 nghìn (2 000) + 8 trăm (800) + 4 đơn vị = 52 804",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-22",
+        "question": "Câu 22: Giá trị của chữ số 7 trong số 872 315 là: (Biến thể 3)",
+        "options": [
+          "70 000",
+          "7 000",
+          "700",
+          "700 000"
+        ],
+        "correctAnswer": "70 000",
+        "explanation": "Chữ số 7 ở hàng chục nghìn nên có giá trị là 70 000.",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-23",
+        "question": "Câu 23: Kết quả của phép tính: 45 612 + 23 145 = ? (Biến thể 3)",
+        "options": [
+          "68 757",
+          "68 747",
+          "67 757",
+          "69 757"
+        ],
+        "correctAnswer": "68 757",
+        "explanation": "45 612 + 23 145 = 68 757",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-24",
+        "question": "Câu 24: Kết quả của phép tính: 85 940 - 32 418 = ? (Biến thể 3)",
+        "options": [
+          "53 522",
+          "53 532",
+          "52 522",
+          "54 522"
+        ],
+        "correctAnswer": "53 522",
+        "explanation": "85 940 - 32 418 = 53 522",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-25",
+        "question": "Câu 25: Một hình vuông có chu vi 36 cm. Diện tích của hình vuông đó là: (Biến thể 3)",
+        "options": [
+          "81 cm²",
+          "36 cm²",
+          "72 cm²",
+          "18 cm²"
+        ],
+        "correctAnswer": "81 cm²",
+        "explanation": "Cạnh hình vuông là: 36 : 4 = 9 cm. Diện tích = 9 x 9 = 81 cm².",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-26",
+        "question": "Câu 26: Phép tính: 25 x 4 + 150 = ? (Biến thể 3)",
+        "options": [
+          "250",
+          "200",
+          "300",
+          "150"
+        ],
+        "correctAnswer": "250",
+        "explanation": "25 x 4 = 100, 100 + 150 = 250.",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-27",
+        "question": "Câu 27: Trung bình cộng của ba số: 15, 25, 50 là: (Biến thể 3)",
+        "options": [
+          "30",
+          "25",
+          "35",
+          "40"
+        ],
+        "correctAnswer": "30",
+        "explanation": "(15 + 25 + 50) : 3 = 90 : 3 = 30.",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-28",
+        "question": "Câu 28: Một ô tô chạy trong 3 giờ được 150 km. Vận tốc trung bình của ô tô là: (Biến thể 3)",
+        "options": [
+          "50 km/h",
+          "45 km/h",
+          "60 km/h",
+          "40 km/h"
+        ],
+        "correctAnswer": "50 km/h",
+        "explanation": "150 : 3 = 50 km/h.",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-29",
+        "question": "Câu 29: Phân số 3/5 bằng phân số nào dưới đây? (Biến thể 3)",
+        "options": [
+          "6/10",
+          "9/20",
+          "5/3",
+          "6/15"
+        ],
+        "correctAnswer": "6/10",
+        "explanation": "Nhân cả tử và mẫu với 2 ta được: (3x2)/(5x2) = 6/10.",
+        "difficulty": "hard",
+        "damage": 30
+      },
+      {
+        "id": "q-ontap4-30",
+        "question": "Câu 30: Rút gọn phân số 18/24 về phân số tối giản ta được: (Biến thể 3)",
+        "options": [
+          "3/4",
+          "2/3",
+          "4/5",
+          "1/2"
+        ],
+        "correctAnswer": "3/4",
+        "explanation": "Chia cả tử và mẫu cho 6: 18:6=3, 24:6=4 => 3/4.",
+        "difficulty": "hard",
+        "damage": 30
+      }
+    ]
+  },
+  {
+    "id": "qs-1793878695722",
+    "title": "Đề Kiểm Tra Phân Số Toán 6",
+    "subject": "math",
+    "grade": 6,
+    "topic": "Phân số và số thập phân",
+    "description": "30 câu hỏi luyện tập phân số chuẩn chương trình Toán 6",
+    "difficulty": "medium",
+    "status": "published",
+    "createdAt": "2026-11-05T11:38:15.724Z",
+    "updatedAt": "2026-11-05T11:38:15.773Z",
+    "version": 2,
+    "questions": [
+      {
+        "id": "q-1",
+        "question": "Câu 1: Tính giá trị của biểu thức $1 \\\\times 2 + 5 = ?$",
+        "options": [
+          "7",
+          "5",
+          "9",
+          "11"
+        ],
+        "correctAnswer": "7",
+        "explanation": "Ta thực hiện phép nhân trước: $1 \\\\times 2 = 2$, sau đó cộng 5 ta được 7.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-2",
+        "question": "Câu 2: Tính giá trị của biểu thức $2 \\\\times 2 + 5 = ?$",
+        "options": [
+          "9",
+          "7",
+          "11",
+          "13"
+        ],
+        "correctAnswer": "9",
+        "explanation": "Ta thực hiện phép nhân trước: $2 \\\\times 2 = 4$, sau đó cộng 5 ta được 9.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-3",
+        "question": "Câu 3: Tính giá trị của biểu thức $3 \\\\times 2 + 5 = ?$",
+        "options": [
+          "11",
+          "9",
+          "13",
+          "15"
+        ],
+        "correctAnswer": "11",
+        "explanation": "Ta thực hiện phép nhân trước: $3 \\\\times 2 = 6$, sau đó cộng 5 ta được 11.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-4",
+        "question": "Câu 4: Tính giá trị của biểu thức $4 \\\\times 2 + 5 = ?$",
+        "options": [
+          "13",
+          "11",
+          "15",
+          "17"
+        ],
+        "correctAnswer": "13",
+        "explanation": "Ta thực hiện phép nhân trước: $4 \\\\times 2 = 8$, sau đó cộng 5 ta được 13.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-5",
+        "question": "Câu 5: Tính giá trị của biểu thức $5 \\\\times 2 + 5 = ?$",
+        "options": [
+          "15",
+          "13",
+          "17",
+          "19"
+        ],
+        "correctAnswer": "15",
+        "explanation": "Ta thực hiện phép nhân trước: $5 \\\\times 2 = 10$, sau đó cộng 5 ta được 15.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-6",
+        "question": "Câu 6: Tính giá trị của biểu thức $6 \\\\times 2 + 5 = ?$",
+        "options": [
+          "17",
+          "15",
+          "19",
+          "21"
+        ],
+        "correctAnswer": "17",
+        "explanation": "Ta thực hiện phép nhân trước: $6 \\\\times 2 = 12$, sau đó cộng 5 ta được 17.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-7",
+        "question": "Câu 7: Tính giá trị của biểu thức $7 \\\\times 2 + 5 = ?$",
+        "options": [
+          "19",
+          "17",
+          "21",
+          "23"
+        ],
+        "correctAnswer": "19",
+        "explanation": "Ta thực hiện phép nhân trước: $7 \\\\times 2 = 14$, sau đó cộng 5 ta được 19.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-8",
+        "question": "Câu 8: Tính giá trị của biểu thức $8 \\\\times 2 + 5 = ?$",
+        "options": [
+          "21",
+          "19",
+          "23",
+          "25"
+        ],
+        "correctAnswer": "21",
+        "explanation": "Ta thực hiện phép nhân trước: $8 \\\\times 2 = 16$, sau đó cộng 5 ta được 21.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-9",
+        "question": "Câu 9: Tính giá trị của biểu thức $9 \\\\times 2 + 5 = ?$",
+        "options": [
+          "23",
+          "21",
+          "25",
+          "27"
+        ],
+        "correctAnswer": "23",
+        "explanation": "Ta thực hiện phép nhân trước: $9 \\\\times 2 = 18$, sau đó cộng 5 ta được 23.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-10",
+        "question": "Câu 10: Tính giá trị của biểu thức $10 \\\\times 2 + 5 = ?$",
+        "options": [
+          "25",
+          "23",
+          "27",
+          "29"
+        ],
+        "correctAnswer": "25",
+        "explanation": "Ta thực hiện phép nhân trước: $10 \\\\times 2 = 20$, sau đó cộng 5 ta được 25.",
+        "difficulty": "easy",
+        "damage": 35
+      },
+      {
+        "id": "q-11",
+        "question": "Câu 11: Tính giá trị của biểu thức $11 \\\\times 2 + 5 = ?$",
+        "options": [
+          "27",
+          "25",
+          "29",
+          "31"
+        ],
+        "correctAnswer": "27",
+        "explanation": "Ta thực hiện phép nhân trước: $11 \\\\times 2 = 22$, sau đó cộng 5 ta được 27.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-12",
+        "question": "Câu 12: Tính giá trị của biểu thức $12 \\\\times 2 + 5 = ?$",
+        "options": [
+          "29",
+          "27",
+          "31",
+          "33"
+        ],
+        "correctAnswer": "29",
+        "explanation": "Ta thực hiện phép nhân trước: $12 \\\\times 2 = 24$, sau đó cộng 5 ta được 29.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-13",
+        "question": "Câu 13: Tính giá trị của biểu thức $13 \\\\times 2 + 5 = ?$",
+        "options": [
+          "31",
+          "29",
+          "33",
+          "35"
+        ],
+        "correctAnswer": "31",
+        "explanation": "Ta thực hiện phép nhân trước: $13 \\\\times 2 = 26$, sau đó cộng 5 ta được 31.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-14",
+        "question": "Câu 14: Tính giá trị của biểu thức $14 \\\\times 2 + 5 = ?$",
+        "options": [
+          "33",
+          "31",
+          "35",
+          "37"
+        ],
+        "correctAnswer": "33",
+        "explanation": "Ta thực hiện phép nhân trước: $14 \\\\times 2 = 28$, sau đó cộng 5 ta được 33.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-15",
+        "question": "Câu 15: Tính giá trị của biểu thức $15 \\\\times 2 + 5 = ?$",
+        "options": [
+          "35",
+          "33",
+          "37",
+          "39"
+        ],
+        "correctAnswer": "35",
+        "explanation": "Ta thực hiện phép nhân trước: $15 \\\\times 2 = 30$, sau đó cộng 5 ta được 35.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-16",
+        "question": "Câu 16: Tính giá trị của biểu thức $16 \\\\times 2 + 5 = ?$",
+        "options": [
+          "37",
+          "35",
+          "39",
+          "41"
+        ],
+        "correctAnswer": "37",
+        "explanation": "Ta thực hiện phép nhân trước: $16 \\\\times 2 = 32$, sau đó cộng 5 ta được 37.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-17",
+        "question": "Câu 17: Tính giá trị của biểu thức $17 \\\\times 2 + 5 = ?$",
+        "options": [
+          "39",
+          "37",
+          "41",
+          "43"
+        ],
+        "correctAnswer": "39",
+        "explanation": "Ta thực hiện phép nhân trước: $17 \\\\times 2 = 34$, sau đó cộng 5 ta được 39.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-18",
+        "question": "Câu 18: Tính giá trị của biểu thức $18 \\\\times 2 + 5 = ?$",
+        "options": [
+          "41",
+          "39",
+          "43",
+          "45"
+        ],
+        "correctAnswer": "41",
+        "explanation": "Ta thực hiện phép nhân trước: $18 \\\\times 2 = 36$, sau đó cộng 5 ta được 41.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-19",
+        "question": "Câu 19: Tính giá trị của biểu thức $19 \\\\times 2 + 5 = ?$",
+        "options": [
+          "43",
+          "41",
+          "45",
+          "47"
+        ],
+        "correctAnswer": "43",
+        "explanation": "Ta thực hiện phép nhân trước: $19 \\\\times 2 = 38$, sau đó cộng 5 ta được 43.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-20",
+        "question": "Câu 20: Tính giá trị của biểu thức $20 \\\\times 2 + 5 = ?$",
+        "options": [
+          "45",
+          "43",
+          "47",
+          "49"
+        ],
+        "correctAnswer": "45",
+        "explanation": "Ta thực hiện phép nhân trước: $20 \\\\times 2 = 40$, sau đó cộng 5 ta được 45.",
+        "difficulty": "medium",
+        "damage": 35
+      },
+      {
+        "id": "q-21",
+        "question": "Câu 21: Tính giá trị của biểu thức $21 \\\\times 2 + 5 = ?$",
+        "options": [
+          "47",
+          "45",
+          "49",
+          "51"
+        ],
+        "correctAnswer": "47",
+        "explanation": "Ta thực hiện phép nhân trước: $21 \\\\times 2 = 42$, sau đó cộng 5 ta được 47.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-22",
+        "question": "Câu 22: Tính giá trị của biểu thức $22 \\\\times 2 + 5 = ?$",
+        "options": [
+          "49",
+          "47",
+          "51",
+          "53"
+        ],
+        "correctAnswer": "49",
+        "explanation": "Ta thực hiện phép nhân trước: $22 \\\\times 2 = 44$, sau đó cộng 5 ta được 49.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-23",
+        "question": "Câu 23: Tính giá trị của biểu thức $23 \\\\times 2 + 5 = ?$",
+        "options": [
+          "51",
+          "49",
+          "53",
+          "55"
+        ],
+        "correctAnswer": "51",
+        "explanation": "Ta thực hiện phép nhân trước: $23 \\\\times 2 = 46$, sau đó cộng 5 ta được 51.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-24",
+        "question": "Câu 24: Tính giá trị của biểu thức $24 \\\\times 2 + 5 = ?$",
+        "options": [
+          "53",
+          "51",
+          "55",
+          "57"
+        ],
+        "correctAnswer": "53",
+        "explanation": "Ta thực hiện phép nhân trước: $24 \\\\times 2 = 48$, sau đó cộng 5 ta được 53.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-25",
+        "question": "Câu 25: Tính giá trị của biểu thức $25 \\\\times 2 + 5 = ?$",
+        "options": [
+          "55",
+          "53",
+          "57",
+          "59"
+        ],
+        "correctAnswer": "55",
+        "explanation": "Ta thực hiện phép nhân trước: $25 \\\\times 2 = 50$, sau đó cộng 5 ta được 55.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-26",
+        "question": "Câu 26: Tính giá trị của biểu thức $26 \\\\times 2 + 5 = ?$",
+        "options": [
+          "57",
+          "55",
+          "59",
+          "61"
+        ],
+        "correctAnswer": "57",
+        "explanation": "Ta thực hiện phép nhân trước: $26 \\\\times 2 = 52$, sau đó cộng 5 ta được 57.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-27",
+        "question": "Câu 27: Tính giá trị của biểu thức $27 \\\\times 2 + 5 = ?$",
+        "options": [
+          "59",
+          "57",
+          "61",
+          "63"
+        ],
+        "correctAnswer": "59",
+        "explanation": "Ta thực hiện phép nhân trước: $27 \\\\times 2 = 54$, sau đó cộng 5 ta được 59.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-28",
+        "question": "Câu 28: Tính giá trị của biểu thức $28 \\\\times 2 + 5 = ?$",
+        "options": [
+          "61",
+          "59",
+          "63",
+          "65"
+        ],
+        "correctAnswer": "61",
+        "explanation": "Ta thực hiện phép nhân trước: $28 \\\\times 2 = 56$, sau đó cộng 5 ta được 61.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-29",
+        "question": "Câu 29: Tính giá trị của biểu thức $29 \\\\times 2 + 5 = ?$",
+        "options": [
+          "63",
+          "61",
+          "65",
+          "67"
+        ],
+        "correctAnswer": "63",
+        "explanation": "Ta thực hiện phép nhân trước: $29 \\\\times 2 = 58$, sau đó cộng 5 ta được 63.",
+        "difficulty": "hard",
+        "damage": 35
+      },
+      {
+        "id": "q-30",
+        "question": "Câu 30: Tính giá trị của biểu thức $30 \\\\times 2 + 5 = ?$",
+        "options": [
+          "65",
+          "63",
+          "67",
+          "69"
+        ],
+        "correctAnswer": "65",
+        "explanation": "Ta thực hiện phép nhân trước: $30 \\\\times 2 = 60$, sau đó cộng 5 ta được 65.",
+        "difficulty": "hard",
+        "damage": 35
+      }
+    ]
+  }
+]

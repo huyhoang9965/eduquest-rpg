@@ -1,0 +1,3136 @@
+# Script to generate upgraded public/rpg.html with Custom 30-Question Adventure Mode
+import os
+
+rpg_html_content = '''<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EduQuest – Học Viện Phiêu Lưu (2D Fantasy RPG Educational Game)</title>
+
+  <!-- React 18, Babel Standalone & Tailwind CSS -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- KaTeX for beautiful math formula rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+    
+    .font-fantasy {
+      font-family: 'Cinzel', serif;
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
+      50% { transform: translateY(-40px) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(-80px) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-grid-pattern min-h-screen text-white select-none overflow-x-hidden">
+
+  <div id="root"></div>
+
+  <!-- Nạp dữ liệu và hệ thống âm thanh & VFX -->
+  <script src="/data/questions-bank.js"></script>
+  <script src="/data/rpg-data.js"></script>
+  <script src="/js/rpg-sound.js"></script>
+  <script src="/js/battle-fx.js"></script>
+
+  <!-- Ứng dụng chính EduQuest React App -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    const STORAGE_KEY = 'eduquest_rpg_hero_save_v3';
+    const JOURNEY_SESSION_KEY = 'eduquest_journey_30_session_v1';
+
+    // Helper render KaTeX an toàn
+    function MathText({ text }) {
+      const containerRef = useRef(null);
+      useEffect(() => {
+        if (containerRef.current && window.renderMathInElement) {
+          try {
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) { }
+        }
+      }, [text]);
+
+      return <span ref={containerRef} dangerouslySetInnerHTML={{ __html: text || '' }}></span>;
+    }
+
+    // 4 BẢN ĐỒ CHIẾN ĐẤU (THEO 4 ẢNH THAM CHIẾU NGƯỜI DÙNG CUNG CẤP)
+    const BATTLE_MAPS = [
+      {
+        id: 'map_forest',
+        name: 'Khu Rừng Tri Thức',
+        image: '/assets/maps/map_forest.jpg',
+        desc: 'Rừng rậm thần tiên, cây xanh cổ thụ, hoa phát sáng và thác nước mát lành.',
+        tag: 'Dễ Chịu • Mộc Phép',
+        color: '#10b981'
+      },
+      {
+        id: 'map_cave',
+        name: 'Hang Động Bí Ẩn',
+        image: '/assets/maps/map_cave.png',
+        desc: 'Hang đá sâu thẳm tỏa ánh sáng huyền ảo từ các tinh thể thạch anh và pha lê lam tím.',
+        tag: 'Huyền Bí • Tinh Thể',
+        color: '#6366f1'
+      },
+      {
+        id: 'map_castle',
+        name: 'Lâu Đài Bóng Tối',
+        image: '/assets/maps/map_castle.jpg',
+        desc: 'Lâu đài nguy nga tráng lệ dưới màn đêm huyền diệu của vương quốc phép thuật cổ.',
+        tag: 'Quý Tộc • Ma Pháp',
+        color: '#a855f7'
+      },
+      {
+        id: 'map_volcano',
+        name: 'Núi Lửa Rồng Thiêng',
+        image: '/assets/maps/map_volcano.png',
+        desc: 'Vùng đất dung nham rực cháy, pháo đài tro tàn và sào huyệt hỏa long cổ đại.',
+        tag: 'Huyền Thoại • Hỏa Long',
+        color: '#ef4444'
+      }
+    ];
+
+    // DANH SÁCH BOSS CHO CHẾ ĐỘ SOLO BOSS 30 CÂU
+    const SOLO_BOSS_ROSTER = [
+      {
+        id: 'king_slime',
+        name: 'Vua Slime Khổng Lồ',
+        title: '👑 King Slime',
+        image: '/assets/monsters/king_slime.png',
+        avatar: '/assets/monsters/king_slime.png',
+        baseHp: 1200,
+        atk: 18,
+        desc: 'Chúa tể chất nhầy đầm lầy với lượng máu dồi dào, có khả năng biến hình cuồng bạo.'
+      },
+      {
+        id: 'golem',
+        name: 'Người Đá Cổ Đại',
+        title: '🗿 Stone Titan',
+        image: '/assets/monsters/golem.png',
+        avatar: '/assets/monsters/golem.png',
+        baseHp: 1400,
+        atk: 22,
+        desc: 'Người khổng lồ đá hoa cương phòng ngự kiên cố từ lòng đất thung lũng tinh thể.'
+      },
+      {
+        id: 'dark_wizard',
+        name: 'Pháp Sư Hắc Ám',
+        title: '🧙‍♂️ Dark Archmage',
+        image: '/assets/monsters/dark_wizard.png',
+        avatar: '/assets/monsters/dark_wizard.png',
+        baseHp: 1500,
+        atk: 25,
+        desc: 'Bậc thầy ma pháp cổ xưa triệu hồi sấm sét và vòng xoáy bóng đêm hủy diệt.'
+      },
+      {
+        id: 'fire_dragon',
+        name: 'Hỏa Long Thần Cổ Đại',
+        title: '🐉 Ancient Fire Dragon',
+        image: '/assets/monsters/fire_dragon.png',
+        avatar: '/assets/monsters/fire_dragon.png',
+        baseHp: 1800,
+        atk: 30,
+        desc: 'Trùm cuối huyền thoại ngự trị trên đỉnh núi lửa, đòn tấn công thiêu đốt toàn sân.'
+      }
+    ];
+
+    // CHUỖI QUÁI VẬT CHO CHẾ ĐỘ MONSTER JOURNEY (30 CÂU)
+    const MONSTER_JOURNEY_SEQUENCE = [
+      // 1-10: Quái vật sơ cấp
+      { minQ: 0, maxQ: 3, name: 'Slime Tinh Nghịch', image: '/assets/monsters/slime.png', hp: 200, atk: 10, isBoss: false },
+      { minQ: 4, maxQ: 7, name: 'Nấm Độc Biến Dị', image: '/assets/monsters/mushroom.png', hp: 300, atk: 14, isBoss: false },
+      { minQ: 8, maxQ: 10, name: 'Sói Rừng Hung Hãn', image: '/assets/monsters/wolf.png', hp: 450, atk: 18, isBoss: false },
+      // 11-20: Quái vật trung cấp
+      { minQ: 11, maxQ: 14, name: 'Dơi Quỷ Siêu Thanh', image: '/assets/monsters/bat.png', hp: 550, atk: 20, isBoss: false },
+      { minQ: 15, maxQ: 17, name: 'Nhện Tinh Thể', image: '/assets/monsters/spider.png', hp: 650, atk: 22, isBoss: false },
+      { minQ: 18, maxQ: 20, name: 'Người Đá Cổ Đại', image: '/assets/monsters/golem.png', hp: 800, atk: 25, isBoss: true },
+      // 21-30: Boss tối thượng
+      { minQ: 21, maxQ: 25, name: 'Pháp Sư Hắc Ám Cổ Tộc', image: '/assets/monsters/dark_wizard.png', hp: 1000, atk: 28, isBoss: true },
+      { minQ: 26, maxQ: 29, name: 'Hỏa Long Thần Cổ Đại', image: '/assets/monsters/fire_dragon.png', hp: 1500, atk: 35, isBoss: true }
+    ];
+
+    // Dữ liệu khởi tạo nhân vật mặc định
+    const defaultHeroState = {
+      hasCreated: false,
+      name: "Dũng Sĩ Tri Thức",
+      heroClass: "warrior",
+      title: "Tân Binh Học Viện",
+      level: 1,
+      exp: 0,
+      maxExp: 100,
+      hp: 130,
+      maxHp: 130,
+      mp: 60,
+      maxMp: 60,
+      gold: 150,
+      gems: 15,
+      currentWorldId: "world-1",
+      currentSubject: "math",
+      currentGrade: 5,
+      completedStages: [],
+      equipped: {
+        weapon: null,
+        shield: null,
+        helmet: null,
+        boots: null,
+        accessory: null
+      },
+      inventory: [
+        { id: "pot-1", name: "Bình Máu Thánh HP", type: "potion", rarity: "common", image: "/assets/items/potion_hp.png", effect: "healHp", value: 60, count: 3, desc: "Hồi phục ngay 60 HP." },
+        { id: "pot-2", name: "Bình Năng Lượng MP", type: "potion", rarity: "common", image: "/assets/items/potion_mp.png", effect: "healMp", value: 60, count: 2, desc: "Hồi phục ngay 60 MP." }
+      ],
+      activePetId: "pet-dragon",
+      unlockedPets: ["pet-dragon"],
+      studyStats: {
+        totalAnswered: 0,
+        totalCorrect: 0,
+        studyMinutes: 15,
+        bossesDefeated: 0,
+        subjectCorrectCounts: { math: 0, english: 0, science: 0 },
+        subjectTotalCounts: { math: 0, english: 0, science: 0 },
+        weakQuestions: []
+      },
+      dailyQuests: window.RPG_DATA.dailyQuests,
+      achievements: window.RPG_DATA.achievements
+    };
+
+    function App() {
+      // Game State
+      const [hero, setHero] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try { return JSON.parse(saved); } catch (e) { }
+        }
+        return defaultHeroState;
+      });
+
+      // Navigation:
+      // Mode 1: 'landing' | 'create_char' | 'subject_select' | 'world_map' | 'battle' | 'victory' | 'profile' | 'inventory' | 'shop' | 'quests' | 'dashboard' | 'settings'
+      // Mode 2 (Hành Trình 30 Câu): 'journey_select_set' | 'journey_select_map' | 'journey_select_hero' | 'journey_select_battle_type' | 'journey_battle' | 'journey_victory'
+      const [screen, setScreen] = useState(() => hero.hasCreated ? 'landing' : 'landing');
+      
+      // Mode 1: Active Map Battle State
+      const [stagePreview, setStagePreview] = useState(null);
+      const [activeStage, setActiveStage] = useState(null);
+      const [currentBattle, setCurrentBattle] = useState(null);
+      const [battleVictoryData, setBattleVictoryData] = useState(null);
+      const [heroAttackAnim, setHeroAttackAnim] = useState(false);
+      const [monsterHitAnim, setMonsterHitAnim] = useState(false);
+      const [showBattleBag, setShowBattleBag] = useState(false);
+      const [openedChest, setOpenedChest] = useState(false);
+      const [chestRewardItem, setChestRewardItem] = useState(null);
+
+      // ==========================================
+      // CHẾ ĐỘ 2: HÀNH TRÌNH 30 CÂU (STATE & SELECTION)
+      // ==========================================
+      const [publishedSets, setPublishedSets] = useState([]);
+      const [loadingSets, setLoadingSets] = useState(false);
+      const [journeySelectedSet, setJourneySelectedSet] = useState(null);
+      const [journeySelectedMap, setJourneySelectedMap] = useState(BATTLE_MAPS[0]);
+      const [journeySelectedHero, setJourneySelectedHero] = useState('warrior');
+      const [journeyBattleType, setJourneyBattleType] = useState('solo_boss'); // 'solo_boss' | 'monster_journey'
+      const [journeySelectedBoss, setJourneySelectedBoss] = useState(SOLO_BOSS_ROSTER[0]);
+
+      // Active Journey 30 Battle Session
+      const [journeySession, setJourneySession] = useState(null);
+      const [savedJourneyAvailable, setSavedJourneyAvailable] = useState(false);
+      const [showWrongReviewModal, setShowWrongReviewModal] = useState(false);
+
+      // Audio State
+      const [isMusicOn, setIsMusicOn] = useState(true);
+      const [isSfxOn, setIsSfxOn] = useState(true);
+
+      // Tự động lưu hero vào LocalStorage
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(hero));
+      }, [hero]);
+
+      // Kiểm tra xem có phiên hành trình 30 câu đang dở dang không
+      useEffect(() => {
+        const saved = localStorage.getItem(JOURNEY_SESSION_KEY);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.currentQIndex < 30 && parsed.setSnapshot) {
+              setSavedJourneyAvailable(true);
+            }
+          } catch (e) { }
+        }
+      }, []);
+
+      // Tải danh sách bộ câu hỏi đã xuất bản (cho Chế độ 2)
+      const loadPublishedQuestionSets = async () => {
+        setLoadingSets(true);
+        try {
+          const res = await fetch('/api/custom-question-sets?published=true');
+          const data = await res.json();
+          if (data.success) {
+            setPublishedSets(data.data || []);
+          }
+        } catch (e) {
+          console.error("Lỗi nạp bộ câu hỏi published:", e);
+        } finally {
+          setLoadingSets(false);
+        }
+      };
+
+      // Quản lý BGM theo màn hình
+      useEffect(() => {
+        if (!isMusicOn) {
+          window.rpgSound.stopBGM();
+          return;
+        }
+        if (screen === 'battle' || screen === 'journey_battle') {
+          const isBoss = activeStage?.isBoss || journeyBattleType === 'solo_boss';
+          window.rpgSound.playBattleBGM(isBoss);
+        } else {
+          window.rpgSound.playTownBGM();
+        }
+      }, [screen, isMusicOn, activeStage, journeyBattleType]);
+
+      // Tính toán tổng chỉ số (Base + Trang bị)
+      const calculatedStats = useMemo(() => {
+        const classData = window.RPG_DATA.classes[hero.heroClass] || window.RPG_DATA.classes.warrior;
+        let atk = classData.baseStats.atk + (hero.level - 1) * 3;
+        let def = classData.baseStats.def + (hero.level - 1) * 2;
+        let maxHp = classData.baseStats.hp + (hero.level - 1) * 15;
+        let maxMp = classData.baseStats.mp + (hero.level - 1) * 10;
+        let spd = classData.baseStats.spd + (hero.level - 1) * 1;
+
+        // Thêm bonus từ trang bị
+        Object.values(hero.equipped).forEach(item => {
+          if (item && item.statBonus) {
+            if (item.statBonus.atk) atk += item.statBonus.atk;
+            if (item.statBonus.def) def += item.statBonus.def;
+            if (item.statBonus.hp) maxHp += item.statBonus.hp;
+            if (item.statBonus.mp) maxMp += item.statBonus.mp;
+            if (item.statBonus.spd) spd += item.statBonus.spd;
+          }
+        });
+
+        // Thêm bonus từ Pet
+        const activePet = window.RPG_DATA.pets.find(p => p.id === hero.activePetId);
+        if (activePet && activePet.buffType === 'damageBonus') {
+          atk = Math.round(atk * (1 + activePet.buffValue));
+        }
+
+        return { atk, def, maxHp, maxMp, spd };
+      }, [hero.heroClass, hero.level, hero.equipped, hero.activePetId]);
+
+      // ==========================================
+      // CHẾ ĐỘ 1: PHIÊU LƯU BẢN ĐỒ (HANDLERS)
+      // ==========================================
+      const startBattle = (stage) => {
+        window.rpgSound.playClick();
+        setActiveStage(stage);
+        setStagePreview(null);
+
+        const questionsPool = window.QUESTIONS_BANK.filter(q => 
+          q.subject === hero.currentSubject && q.worldId === hero.currentWorldId
+        );
+        const effectiveQuestions = questionsPool.length > 0 
+          ? questionsPool 
+          : window.QUESTIONS_BANK.filter(q => q.subject === hero.currentSubject);
+
+        const shuffledQ = [...effectiveQuestions].sort(() => Math.random() - 0.5);
+
+        setCurrentBattle({
+          monster: { ...stage.monster },
+          questions: shuffledQ,
+          currentQIndex: 0,
+          combo: 0,
+          heroCurrentHp: calculatedStats.maxHp,
+          heroCurrentMp: calculatedStats.maxMp,
+          answeredRight: 0,
+          answeredWrong: 0,
+          isAnswered: false,
+          selectedAnswer: null,
+          isCorrect: null,
+          showExplanation: false,
+          isEnraged: false,
+          damageAnimation: null
+        });
+
+        setShowBattleBag(false);
+        setScreen('battle');
+      };
+
+      const handleAnswer = (choice) => {
+        if (!currentBattle || currentBattle.isAnswered) return;
+        const currentQ = currentBattle.questions[currentBattle.currentQIndex];
+        const isRight = (choice === currentQ.correctAnswer);
+
+        window.rpgSound.playClick();
+
+        if (isRight) {
+          const newCombo = currentBattle.combo + 1;
+          const isCrit = newCombo >= 3 || Math.random() < 0.25;
+          let damage = Math.round(currentQ.damage * (1 + (calculatedStats.atk / 40)));
+          if (isCrit) damage = Math.round(damage * 1.6);
+
+          setHeroAttackAnim(true);
+          setTimeout(() => setHeroAttackAnim(false), 500);
+
+          if (hero.heroClass === 'warrior') window.rpgSound.playSlash();
+          else if (hero.heroClass === 'mage') window.rpgSound.playMagic();
+          else window.rpgSound.playArrow();
+
+          if (isCrit) window.rpgSound.playCriticalHit();
+
+          if (window.battleFx) {
+            window.battleFx.triggerMobileSlashAnimation(hero.heroClass, isCrit);
+          }
+
+          setTimeout(() => {
+            setMonsterHitAnim(true);
+            setTimeout(() => setMonsterHitAnim(false), 550);
+          }, 200);
+
+          const remainingMonsterHp = Math.max(0, currentBattle.monster.hp - damage);
+          const isPhase2 = activeStage.isBoss && remainingMonsterHp <= (currentBattle.monster.phase2Hp || 0);
+
+          let healedHp = currentBattle.heroCurrentHp;
+          const activePet = window.RPG_DATA.pets.find(p => p.id === hero.activePetId);
+          if (activePet && activePet.buffType === 'healOnCorrect') {
+            healedHp = Math.min(calculatedStats.maxHp, healedHp + activePet.buffValue);
+          }
+
+          setHero(prev => {
+            const nextStats = { ...prev.studyStats };
+            nextStats.totalAnswered += 1;
+            nextStats.totalCorrect += 1;
+            nextStats.subjectCorrectCounts[prev.currentSubject] = (nextStats.subjectCorrectCounts[prev.currentSubject] || 0) + 1;
+            nextStats.subjectTotalCounts[prev.currentSubject] = (nextStats.subjectTotalCounts[prev.currentSubject] || 0) + 1;
+            return { ...prev, studyStats: nextStats };
+          });
+
+          setCurrentBattle(prev => ({
+            ...prev,
+            isAnswered: true,
+            selectedAnswer: choice,
+            isCorrect: true,
+            combo: newCombo,
+            heroCurrentHp: healedHp,
+            answeredRight: prev.answeredRight + 1,
+            monster: { ...prev.monster, hp: remainingMonsterHp },
+            isEnraged: isPhase2,
+            damageAnimation: { text: isCrit ? `💥 CHÍ MẠNG -${damage}!` : `-${damage}`, isCrit }
+          }));
+
+          if (remainingMonsterHp <= 0) {
+            setTimeout(() => {
+              handleBattleVictory();
+            }, 1200);
+          } else {
+            setTimeout(() => {
+              advanceToNextQuestion();
+            }, 1600);
+          }
+        } else {
+          window.rpgSound.playPlayerHurt();
+          const monsterAtk = Math.max(8, (currentBattle.monster.atk || 15) - Math.round(calculatedStats.def / 3));
+          const remainingHeroHp = Math.max(1, currentBattle.heroCurrentHp - monsterAtk);
+
+          setHero(prev => {
+            const nextStats = { ...prev.studyStats };
+            nextStats.totalAnswered += 1;
+            nextStats.subjectTotalCounts[prev.currentSubject] = (nextStats.subjectTotalCounts[prev.currentSubject] || 0) + 1;
+            if (!nextStats.weakQuestions.includes(currentQ.question)) {
+              nextStats.weakQuestions.push(currentQ.question);
+            }
+            return { ...prev, studyStats: nextStats };
+          });
+
+          setCurrentBattle(prev => ({
+            ...prev,
+            isAnswered: true,
+            selectedAnswer: choice,
+            isCorrect: false,
+            combo: 0,
+            showExplanation: true,
+            answeredWrong: prev.answeredWrong + 1,
+            heroCurrentHp: remainingHeroHp,
+            damageAnimation: { text: `Quái phản công: -${monsterAtk} HP!`, isMonster: true }
+          }));
+        }
+      };
+
+      const advanceToNextQuestion = () => {
+        setCurrentBattle(prev => {
+          if (!prev) return null;
+          const nextIdx = (prev.currentQIndex + 1) % prev.questions.length;
+          return {
+            ...prev,
+            currentQIndex: nextIdx,
+            isAnswered: false,
+            selectedAnswer: null,
+            isCorrect: null,
+            showExplanation: false,
+            damageAnimation: null
+          };
+        });
+      };
+
+      const handleBattleVictory = () => {
+        window.rpgSound.playVictory();
+        confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } });
+
+        let expEarned = activeStage.monster.expReward || 40;
+        let goldEarned = activeStage.monster.goldReward || 30;
+        const gemEarned = activeStage.monster.gemReward || (activeStage.isBoss ? 15 : 2);
+
+        const activePet = window.RPG_DATA.pets.find(p => p.id === hero.activePetId);
+        if (activePet) {
+          if (activePet.buffType === 'goldBonus') goldEarned = Math.round(goldEarned * (1 + activePet.buffValue));
+          if (activePet.buffType === 'expBonus') expEarned = Math.round(expEarned * (1 + activePet.buffValue));
+        }
+
+        const newCompleted = [...new Set([...hero.completedStages, activeStage.id])];
+
+        let newExp = hero.exp + expEarned;
+        let newLevel = hero.level;
+        let newMaxExp = hero.maxExp;
+        let didLevelUp = false;
+
+        if (newExp >= newMaxExp) {
+          newLevel += 1;
+          newExp -= newMaxExp;
+          newMaxExp = Math.round(newMaxExp * 1.35);
+          didLevelUp = true;
+          window.rpgSound.playLevelUp();
+        }
+
+        setHero(prev => ({
+          ...prev,
+          level: newLevel,
+          exp: newExp,
+          maxExp: newMaxExp,
+          gold: prev.gold + goldEarned,
+          gems: prev.gems + gemEarned,
+          completedStages: newCompleted,
+          studyStats: {
+            ...prev.studyStats,
+            bossesDefeated: activeStage.isBoss ? prev.studyStats.bossesDefeated + 1 : prev.studyStats.bossesDefeated
+          }
+        }));
+
+        setOpenedChest(false);
+        setChestRewardItem(null);
+
+        setBattleVictoryData({
+          stageName: activeStage.name,
+          monsterName: activeStage.monster.name,
+          isBoss: activeStage.isBoss,
+          expEarned,
+          goldEarned,
+          gemEarned,
+          didLevelUp,
+          newLevel,
+          accuracy: Math.round((currentBattle.answeredRight / Math.max(1, currentBattle.answeredRight + currentBattle.answeredWrong)) * 100)
+        });
+
+        setScreen('victory');
+      };
+
+      // ==========================================
+      // CHẾ ĐỘ 2: HÀNH TRÌNH 30 CÂU (HANDLERS)
+      // ==========================================
+
+      // Khởi động Hành trình 30 câu mới
+      const startJourneyAdventure = async () => {
+        window.rpgSound.playClick();
+        if (!journeySelectedSet) {
+          alert("Vui lòng chọn 1 bộ câu hỏi!");
+          return;
+        }
+
+        // Tải toàn bộ chi tiết 30 câu hỏi của bộ đã chọn
+        setLoadingSets(true);
+        try {
+          const res = await fetch(`/api/custom-question-sets/${journeySelectedSet.id}`);
+          const data = await res.json();
+          if (!data.success || !data.data || !Array.isArray(data.data.questions) || data.data.questions.length !== 30) {
+            alert("Bộ câu hỏi này chưa đủ đúng 30 câu hỏi hợp lệ! Vui lòng vào trang Quản Lý để hoàn thiện đủ 30 câu.");
+            return;
+          }
+
+          const setFull = data.data;
+
+          // Thiết lập quái vật khởi đầu
+          let initialMonster;
+          if (journeyBattleType === 'solo_boss') {
+            initialMonster = {
+              name: journeySelectedBoss.name,
+              image: journeySelectedBoss.image,
+              hp: journeySelectedBoss.baseHp,
+              maxHp: journeySelectedBoss.baseHp,
+              atk: journeySelectedBoss.atk,
+              isBoss: true,
+              phase: 1
+            };
+          } else {
+            const firstCfg = MONSTER_JOURNEY_SEQUENCE[0];
+            initialMonster = {
+              name: firstCfg.name,
+              image: firstCfg.image,
+              hp: firstCfg.hp,
+              maxHp: firstCfg.hp,
+              atk: firstCfg.atk,
+              isBoss: firstCfg.isBoss,
+              phase: 1
+            };
+          }
+
+          const initialSession = {
+            setId: setFull.id,
+            setTitle: setFull.title,
+            setTopic: setFull.topic,
+            subject: setFull.subject,
+            grade: setFull.grade,
+            setSnapshot: setFull.questions, // Snapshot bất biến 30 câu
+            map: journeySelectedMap,
+            heroClass: journeySelectedHero,
+            battleType: journeyBattleType,
+            monster: initialMonster,
+            currentQIndex: 0,
+            answersHistory: [],
+            combo: 0,
+            heroCurrentHp: calculatedStats.maxHp,
+            heroCurrentMp: calculatedStats.maxMp,
+            accumulatedGold: 0,
+            accumulatedExp: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            startTime: Date.now(),
+            isAnswered: false,
+            selectedAnswer: null,
+            isCorrect: null,
+            showExplanation: false,
+            autoAdvance: false,
+            damageAnimation: null
+          };
+
+          setJourneySession(initialSession);
+          localStorage.setItem(JOURNEY_SESSION_KEY, JSON.stringify(initialSession));
+          setSavedJourneyAvailable(false);
+          setShowBattleBag(false);
+          setScreen('journey_battle');
+
+        } catch (e) {
+          alert("Lỗi khởi tạo hành trình: " + e.message);
+        } finally {
+          setLoadingSets(false);
+        }
+      };
+
+      // Khôi phục hành trình đã lưu trong LocalStorage
+      const resumeSavedJourney = () => {
+        window.rpgSound.playClick();
+        const saved = localStorage.getItem(JOURNEY_SESSION_KEY);
+        if (!saved) return;
+        try {
+          const parsed = JSON.parse(saved);
+          setJourneySession(parsed);
+          setSavedJourneyAvailable(false);
+          setScreen('journey_battle');
+        } catch (e) {
+          alert("Không thể khôi phục phiên chơi: " + e.message);
+        }
+      };
+
+      // Hủy phiên chơi đã lưu
+      const discardSavedJourney = () => {
+        if (confirm("Bạn có chắc chắn muốn hủy bỏ hành trình đang dở dang này?")) {
+          localStorage.removeItem(JOURNEY_SESSION_KEY);
+          setSavedJourneyAvailable(false);
+        }
+      };
+
+      // Xử lý nộp đáp án trong Hành trình 30 câu
+      const handleJourneyAnswer = (choice) => {
+        if (!journeySession || journeySession.isAnswered) return;
+        const currentQ = journeySession.setSnapshot[journeySession.currentQIndex];
+        const isRight = (choice === currentQ.correctAnswer);
+
+        window.rpgSound.playClick();
+
+        if (isRight) {
+          // Trả lời đúng
+          const newCombo = journeySession.combo + 1;
+          const isCrit = newCombo >= 3 || Math.random() < 0.25;
+          let damage = Math.round((currentQ.damage || 35) * (1 + (calculatedStats.atk / 35)));
+          if (isCrit) damage = Math.round(damage * 1.6);
+          if (newCombo >= 10) damage = Math.round(damage * 2.2); // Super attack
+
+          setHeroAttackAnim(true);
+          setTimeout(() => setHeroAttackAnim(false), 500);
+
+          if (journeySession.heroClass === 'warrior') window.rpgSound.playSlash();
+          else if (journeySession.heroClass === 'mage') window.rpgSound.playMagic();
+          else window.rpgSound.playArrow();
+
+          if (isCrit) window.rpgSound.playCriticalHit();
+
+          if (window.battleFx) {
+            window.battleFx.triggerMobileSlashAnimation(journeySession.heroClass, isCrit);
+          }
+
+          setTimeout(() => {
+            setMonsterHitAnim(true);
+            setTimeout(() => setMonsterHitAnim(false), 550);
+          }, 200);
+
+          // Tính toán máu quái vật
+          let nextMonsterHp = Math.max(0, journeySession.monster.hp - damage);
+          let updatedMonster = { ...journeySession.monster, hp: nextMonsterHp };
+
+          // Xử lý chuyển đổi quái vật / Hồi sinh Boss nếu hết máu sớm (đảm bảo đủ 30 câu)
+          if (nextMonsterHp <= 0) {
+            if (journeySession.battleType === 'solo_boss') {
+              // Solo Boss hồi sinh chuyển phase cuồng bạo
+              const nextPhase = (journeySession.monster.phase || 1) + 1;
+              updatedMonster = {
+                ...journeySession.monster,
+                phase: nextPhase,
+                hp: Math.round(journeySelectedBoss.baseHp * 0.8),
+                maxHp: Math.round(journeySelectedBoss.baseHp * 0.8),
+                atk: journeySession.monster.atk + 4,
+                isEnraged: true
+              };
+            } else {
+              // Monster Journey: tìm quái tiếp theo tương ứng câu hiện tại
+              const nextQ = journeySession.currentQIndex + 1;
+              const nextCfg = MONSTER_JOURNEY_SEQUENCE.find(m => nextQ >= m.minQ && nextQ <= m.maxQ) || MONSTER_JOURNEY_SEQUENCE[MONSTER_JOURNEY_SEQUENCE.length - 1];
+              updatedMonster = {
+                name: nextCfg.name,
+                image: nextCfg.image,
+                hp: nextCfg.hp,
+                maxHp: nextCfg.hp,
+                atk: nextCfg.atk,
+                isBoss: nextCfg.isBoss,
+                phase: 1
+              };
+            }
+          }
+
+          const goldGain = Math.round(15 * (1 + newCombo * 0.1));
+          const expGain = Math.round(25 * (1 + newCombo * 0.1));
+
+          const historyEntry = {
+            qIndex: journeySession.currentQIndex,
+            question: currentQ.question,
+            options: currentQ.options,
+            chosenAnswer: choice,
+            correctAnswer: currentQ.correctAnswer,
+            isCorrect: true,
+            explanation: currentQ.explanation
+          };
+
+          const nextSession = {
+            ...journeySession,
+            isAnswered: true,
+            selectedAnswer: choice,
+            isCorrect: true,
+            combo: newCombo,
+            correctCount: journeySession.correctCount + 1,
+            accumulatedGold: journeySession.accumulatedGold + goldGain,
+            accumulatedExp: journeySession.accumulatedExp + expGain,
+            monster: updatedMonster,
+            answersHistory: [...journeySession.answersHistory, historyEntry],
+            damageAnimation: { text: isCrit ? `💥 CHÍ MẠNG -${damage}!` : `-${damage}`, isCrit }
+          };
+
+          setJourneySession(nextSession);
+          localStorage.setItem(JOURNEY_SESSION_KEY, JSON.stringify(nextSession));
+
+          if (journeySession.autoAdvance) {
+            setTimeout(() => {
+              advanceToNextJourneyQuestion();
+            }, 2200);
+          }
+
+        } else {
+          // Trả lời sai
+          window.rpgSound.playPlayerHurt();
+          const monsterAtk = Math.max(10, (journeySession.monster.atk || 18) - Math.round(calculatedStats.def / 3));
+          const remainingHeroHp = Math.max(1, journeySession.heroCurrentHp - monsterAtk);
+
+          const historyEntry = {
+            qIndex: journeySession.currentQIndex,
+            question: currentQ.question,
+            options: currentQ.options,
+            chosenAnswer: choice,
+            correctAnswer: currentQ.correctAnswer,
+            isCorrect: false,
+            explanation: currentQ.explanation
+          };
+
+          const nextSession = {
+            ...journeySession,
+            isAnswered: true,
+            selectedAnswer: choice,
+            isCorrect: false,
+            combo: 0,
+            showExplanation: true,
+            wrongCount: journeySession.wrongCount + 1,
+            heroCurrentHp: remainingHeroHp,
+            answersHistory: [...journeySession.answersHistory, historyEntry],
+            damageAnimation: { text: `Quái phản công: -${monsterAtk} HP!`, isMonster: true }
+          };
+
+          setJourneySession(nextSession);
+          localStorage.setItem(JOURNEY_SESSION_KEY, JSON.stringify(nextSession));
+        }
+      };
+
+      // Chuyển sang câu hỏi kế tiếp trong hành trình 30 câu
+      const advanceToNextJourneyQuestion = () => {
+        if (!journeySession) return;
+        const nextIndex = journeySession.currentQIndex + 1;
+
+        if (nextIndex >= 30) {
+          // ĐÃ HOÀN THÀNH TOÀN BỘ 30 CÂU!
+          handleJourneyComplete();
+          return;
+        }
+
+        // Cập nhật quái vật nếu ở chế độ chuỗi quái vật
+        let currentMon = journeySession.monster;
+        if (journeySession.battleType === 'monster_journey') {
+          const cfg = MONSTER_JOURNEY_SEQUENCE.find(m => nextIndex >= m.minQ && nextIndex <= m.maxQ) || MONSTER_JOURNEY_SEQUENCE[MONSTER_JOURNEY_SEQUENCE.length - 1];
+          if (cfg.name !== currentMon.name) {
+            currentMon = {
+              name: cfg.name,
+              image: cfg.image,
+              hp: cfg.hp,
+              maxHp: cfg.hp,
+              atk: cfg.atk,
+              isBoss: cfg.isBoss,
+              phase: 1
+            };
+          }
+        }
+
+        const nextSession = {
+          ...journeySession,
+          currentQIndex: nextIndex,
+          monster: currentMon,
+          isAnswered: false,
+          selectedAnswer: null,
+          isCorrect: null,
+          showExplanation: false,
+          damageAnimation: null
+        };
+
+        setJourneySession(nextSession);
+        localStorage.setItem(JOURNEY_SESSION_KEY, JSON.stringify(nextSession));
+      };
+
+      // Hoàn thành xuất sắc 30 câu hỏi!
+      const handleJourneyComplete = () => {
+        window.rpgSound.playVictory();
+        confetti({ particleCount: 220, spread: 120, origin: { y: 0.5 } });
+
+        const totalEarnedGold = journeySession.accumulatedGold + 100; // Thưởng hoàn thành
+        const totalEarnedExp = journeySession.accumulatedExp + 150;
+
+        // Lưu vào hero
+        let newExp = hero.exp + totalEarnedExp;
+        let newLevel = hero.level;
+        let newMaxExp = hero.maxExp;
+        let didLevelUp = false;
+
+        if (newExp >= newMaxExp) {
+          newLevel += 1;
+          newExp -= newMaxExp;
+          newMaxExp = Math.round(newMaxExp * 1.35);
+          didLevelUp = true;
+          window.rpgSound.playLevelUp();
+        }
+
+        setHero(prev => ({
+          ...prev,
+          level: newLevel,
+          exp: newExp,
+          maxExp: newMaxExp,
+          gold: prev.gold + totalEarnedGold,
+          gems: prev.gems + 20,
+          studyStats: {
+            ...prev.studyStats,
+            totalAnswered: prev.studyStats.totalAnswered + 30,
+            totalCorrect: prev.studyStats.totalCorrect + journeySession.correctCount,
+            bossesDefeated: prev.studyStats.bossesDefeated + 1
+          }
+        }));
+
+        // Xóa session đã hoàn thành để tránh nhận thưởng trùng
+        localStorage.removeItem(JOURNEY_SESSION_KEY);
+        setSavedJourneyAvailable(false);
+        setOpenedChest(false);
+        setChestRewardItem(null);
+
+        setScreen('journey_victory');
+      };
+
+      // Dùng bình máu / mana trong túi đồ
+      const usePotion = (item) => {
+        window.rpgSound.playClick();
+        const isJourney = screen === 'journey_battle';
+
+        if (item.effect === 'healHp') {
+          const healAmount = item.value || 60;
+          if (isJourney && journeySession) {
+            setJourneySession(prev => ({
+              ...prev,
+              heroCurrentHp: Math.min(calculatedStats.maxHp, prev.heroCurrentHp + healAmount)
+            }));
+          } else if (currentBattle) {
+            setCurrentBattle(prev => ({
+              ...prev,
+              heroCurrentHp: Math.min(calculatedStats.maxHp, prev.heroCurrentHp + healAmount)
+            }));
+          }
+          window.rpgSound.playHeal();
+        } else if (item.effect === 'healMp') {
+          const manaAmount = item.value || 60;
+          if (isJourney && journeySession) {
+            setJourneySession(prev => ({
+              ...prev,
+              heroCurrentMp: Math.min(calculatedStats.maxMp, prev.heroCurrentMp + manaAmount)
+            }));
+          } else if (currentBattle) {
+            setCurrentBattle(prev => ({
+              ...prev,
+              heroCurrentMp: Math.min(calculatedStats.maxMp, prev.heroCurrentMp + manaAmount)
+            }));
+          }
+          window.rpgSound.playHeal();
+        }
+
+        setHero(prev => {
+          const nextInv = prev.inventory.map(i => {
+            if (i.id === item.id) return { ...i, count: (i.count || 1) - 1 };
+            return i;
+          }).filter(i => i.count > 0);
+          return { ...prev, inventory: nextInv };
+        });
+      };
+
+      // Mở rương bí ẩn
+      const handleOpenMysteryChest = () => {
+        if (openedChest) return;
+        window.rpgSound.playChestOpen();
+        setOpenedChest(true);
+
+        const possibleDrops = [
+          window.RPG_DATA.shopItems.find(i => i.id === 'wp-4'),
+          window.RPG_DATA.shopItems.find(i => i.id === 'ar-1'),
+          window.RPG_DATA.shopItems.find(i => i.id === 'ac-1'),
+          window.RPG_DATA.shopItems.find(i => i.id === 'ar-3')
+        ].filter(Boolean);
+
+        const reward = possibleDrops[Math.floor(Math.random() * possibleDrops.length)];
+        setChestRewardItem(reward);
+
+        setHero(prev => {
+          const newInv = [...prev.inventory];
+          const exists = newInv.find(i => i.id === reward.id);
+          if (exists) {
+            exists.count = (exists.count || 1) + 1;
+          } else {
+            newInv.push({ ...reward, count: 1 });
+          }
+          return { ...prev, inventory: newInv };
+        });
+
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+      };
+
+      // Mua vật phẩm trong Shop
+      const buyItem = (item) => {
+        window.rpgSound.playClick();
+        if (hero.gold < item.price) {
+          alert("Bạn không đủ Vàng! Hãy tiếp tục trả lời đúng câu hỏi để kiếm thêm vàng nhé.");
+          return;
+        }
+
+        window.rpgSound.playBuyItem();
+
+        setHero(prev => {
+          const newGold = prev.gold - item.price;
+          const existing = prev.inventory.find(i => i.id === item.id);
+          let newInv = [...prev.inventory];
+          if (existing) {
+            existing.count = (existing.count || 1) + 1;
+          } else {
+            newInv.push({ ...item, count: 1 });
+          }
+          return { ...prev, gold: newGold, inventory: newInv };
+        });
+      };
+
+      // Mở khóa Thú Cưng
+      const adoptPet = (pet) => {
+        window.rpgSound.playClick();
+        if (hero.gold < pet.price) {
+          alert("Bạn cần thêm vàng để mở khóa linh thú đồng hành này!");
+          return;
+        }
+
+        window.rpgSound.playBuyItem();
+
+        setHero(prev => ({
+          ...prev,
+          gold: prev.gold - pet.price,
+          unlockedPets: [...new Set([...prev.unlockedPets, pet.id])],
+          activePetId: pet.id
+        }));
+      };
+
+      // Trang bị vật phẩm
+      const equipItem = (item) => {
+        window.rpgSound.playEquip();
+        setHero(prev => {
+          const slot = item.slot;
+          const currentEquipped = prev.equipped[slot];
+          let nextInv = prev.inventory.map(i => {
+            if (i.id === item.id) return { ...i, count: (i.count || 1) - 1 };
+            return i;
+          }).filter(i => i.count > 0);
+
+          if (currentEquipped) nextInv.push(currentEquipped);
+
+          return {
+            ...prev,
+            equipped: { ...prev.equipped, [slot]: item },
+            inventory: nextInv
+          };
+        });
+      };
+
+      const unequipItem = (slot) => {
+        const item = hero.equipped[slot];
+        if (!item) return;
+
+        window.rpgSound.playEquip();
+        setHero(prev => ({
+          ...prev,
+          equipped: { ...prev.equipped, [slot]: null },
+          inventory: [...prev.inventory, item]
+        }));
+      };
+
+      const claimDailyQuest = (questId) => {
+        window.rpgSound.playVictory();
+        setHero(prev => {
+          const quest = prev.dailyQuests.find(q => q.id === questId);
+          if (!quest || quest.isClaimed) return prev;
+
+          const updatedQuests = prev.dailyQuests.map(q => {
+            if (q.id === questId) return { ...q, isClaimed: true };
+            return q;
+          });
+
+          return {
+            ...prev,
+            gold: prev.gold + quest.reward.gold,
+            gems: prev.gems + (quest.reward.gems || 0),
+            dailyQuests: updatedQuests
+          };
+        });
+      };
+
+      const heroClassData = window.RPG_DATA.classes[hero.heroClass] || window.RPG_DATA.classes.warrior;
+      const activePetData = window.RPG_DATA.pets.find(p => p.id === hero.activePetId) || window.RPG_DATA.pets[0];
+
+      return (
+        <div class="min-h-screen flex flex-col justify-between relative z-10">
+          
+          {/* ======================================================== */}
+          {/* TOP STATUS BAR (HEADER FANTASY RPG)                      */}
+          {/* ======================================================== */}
+          {screen !== 'battle' && screen !== 'journey_battle' && (
+            <header class="w-full bg-black/85 border-b border-amber-500/30 px-4 py-2.5 backdrop-blur-md sticky top-0 z-40">
+              <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                
+                {/* Logo & Hero Profile Icon */}
+                <div class="flex items-center gap-3">
+                  <button onClick={() => setScreen('profile')} class="relative group" title="Xem hồ sơ anh hùng">
+                    <div class="w-11 h-11 rounded-full border-2 border-amber-400 bg-gradient-to-tr from-amber-600/40 to-black p-0.5 overflow-hidden shadow-lg group-hover:scale-105 transition">
+                      <img src={heroClassData.avatar} alt="Hero" class="w-full h-full object-contain" />
+                    </div>
+                    <span class="absolute -bottom-1 -right-1 bg-amber-500 text-black font-black text-[10px] px-1.5 py-0.2 rounded-full border border-black shadow">
+                      Lv.{hero.level}
+                    </span>
+                  </button>
+
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h1 class="font-extrabold text-sm sm:text-base text-white tracking-wide truncate max-w-[140px] sm:max-w-xs">
+                        {hero.name}
+                      </h1>
+                      <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {heroClassData.name}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-[10px] text-gray-300 font-mono mt-0.5">
+                      <div class="w-24 sm:w-32 bg-black/60 h-2 rounded-full overflow-hidden border border-white/20">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-300" 
+                          style={{ width: `${Math.min(100, Math.round((hero.exp / hero.maxExp) * 100))}%` }}></div>
+                      </div>
+                      <span class="hidden sm:inline">{hero.exp}/{hero.maxExp} EXP</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vàng, Kim Cương & Nút Creator Studio */}
+                <div class="flex items-center gap-3">
+                  <a href="/creator.html" class="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 text-xs font-bold text-amber-200 transition">
+                    <span>✏️</span> Quản Lý Bộ Câu Hỏi
+                  </a>
+
+                  <div class="flex items-center gap-1.5 bg-black/60 border border-amber-500/40 px-3 py-1 rounded-2xl">
+                    <img src="/assets/items/gold_coins.png" alt="Gold" class="w-5 h-5 object-contain" />
+                    <span class="font-black text-amber-300 font-mono text-xs sm:text-sm">{hero.gold}</span>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 bg-black/60 border border-cyan-500/40 px-3 py-1 rounded-2xl">
+                    <img src="/assets/items/mana_crystal.png" alt="Gem" class="w-4 h-4 object-contain" />
+                    <span class="font-black text-cyan-300 font-mono text-xs sm:text-sm">{hero.gems}</span>
+                  </div>
+
+                  <button onClick={() => {
+                    const next = window.rpgSound.toggleMusic();
+                    setIsMusicOn(next);
+                  }} class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 text-sm" title="Bật/Tắt Nhạc BGM">
+                    {isMusicOn ? '🎵' : '🔇'}
+                  </button>
+                </div>
+
+              </div>
+            </header>
+          )}
+
+          {/* ======================================================== */}
+          {/* BANNER THÔNG BÁO TIẾP TỤC HÀNH TRÌNH 30 CÂU NẾU CÓ DỞ DANG */}
+          {/* ======================================================== */}
+          {savedJourneyAvailable && screen === 'landing' && (
+            <div class="max-w-4xl mx-auto w-full px-4 pt-4">
+              <div class="p-4 rounded-3xl bg-gradient-to-r from-amber-600/30 via-purple-600/30 to-black border-2 border-amber-400 shadow-2xl flex items-center justify-between gap-4 animate-fade-in">
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl animate-bounce">⚔️</span>
+                  <div>
+                    <h4 class="font-black text-sm text-amber-300">Bạn có một Hành Trình 30 Câu đang dang dở!</h4>
+                    <p class="text-xs text-gray-300">Hệ thống đã lưu lại tiến trình câu hỏi và chỉ số của bạn. Bạn có muốn tiếp tục không?</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onClick={discardSavedJourney} class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-gray-300">
+                    Hủy bỏ
+                  </button>
+                  <button onClick={resumeSavedJourney} class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs font-fantasy shadow-lg">
+                    Tiếp Tục Chơi ➡️
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* NỘI DUNG CHÍNH (MAIN SCREENS)                            */}
+          {/* ======================================================== */}
+          <main class="flex-1 flex flex-col justify-center items-center p-3 sm:p-6 max-w-7xl w-full mx-auto">
+            
+            {/* SCREEN 1: LANDING PAGE - 2 CHẾ ĐỘ CHƠI LỚN */}
+            {screen === 'landing' && (
+              <div class="text-center space-y-8 max-w-5xl py-6 animate-fade-in w-full">
+                
+                {/* Header Title */}
+                <div class="space-y-3">
+                  <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-pink-500/20 border border-amber-400/40 text-xs font-bold text-amber-300 uppercase tracking-widest shadow-lg">
+                    ✨ 2D FANTASY RPG EDUCATIONAL ADVENTURE
+                  </div>
+                  <h1 class="text-4xl sm:text-6xl font-black font-fantasy tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 leading-tight drop-shadow-[0_4px_16px_rgba(245,158,11,0.4)]">
+                    EDUQUEST: HỌC VIỆN PHIÊU LƯU
+                  </h1>
+                  <p class="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                    Học kiến thức – Đánh bại quái vật – Trở thành anh hùng huyền thoại! Mỗi câu hỏi chính xác là một chiêu thức tấn công uy lực.
+                  </p>
+                </div>
+
+                {/* HAI LỰA CHỌN CHẾ ĐỘ CHƠI LỚN (YÊU CẦU MỚI) */}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-left">
+                  
+                  {/* CHẾ ĐỘ 1: PHIÊU LƯU BẢN ĐỒ (GIỮ NGUYÊN) */}
+                  <div class="fantasy-parchment-box p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-amber-400 transition transform hover:-translate-y-1 shadow-2xl relative overflow-hidden group">
+                    <div class="corner-filigree-tl"></div>
+                    <div class="corner-filigree-tr"></div>
+                    <div class="corner-filigree-bl"></div>
+                    <div class="corner-filigree-br"></div>
+
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase text-emerald-400 tracking-wider bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
+                          🗺️ CHẾ ĐỘ 1 • CỔ ĐIỂN
+                        </span>
+                        <span class="text-xs text-gray-400 font-mono">10 Ải & 4 Thế Giới</span>
+                      </div>
+
+                      <div class="h-36 rounded-2xl overflow-hidden border border-white/20 relative shadow-inner">
+                        <img src="/assets/world-map.jpg" alt="Bản Đồ Đảo Nổi" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <span class="absolute bottom-2 left-3 font-fantasy font-black text-base text-amber-300 drop-shadow">
+                          Đảo Nổi Phiêu Lưu
+                        </span>
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <h3 class="text-xl sm:text-2xl font-black font-fantasy text-white">Phiêu Lưu Bản Đồ</h3>
+                        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                          Khám phá từng vùng đất trên đảo thần tiên, vượt qua 10 ải thử thách, tiêu diệt quái vật để mở khóa các khu vực mới và đối đầu Trùm Hỏa Long Thần!
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="pt-2">
+                      <button onClick={() => {
+                        window.rpgSound.playClick();
+                        if (!hero.hasCreated) setScreen('create_char');
+                        else setScreen('world_map');
+                      }} class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 text-white font-black text-base shadow-xl shadow-emerald-600/30 font-fantasy flex items-center justify-center gap-2 transition transform active:scale-95">
+                        <span>🗺️</span> {hero.hasCreated ? 'VÀO BẢN ĐỒ THẾ GIỚI' : 'TẠO TƯỚNG & VÀO BẢN ĐỒ'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CHẾ ĐỘ 2: HÀNH TRÌNH 30 CÂU LIÊN TỤC (MỚI) */}
+                  <div class="fantasy-parchment-box p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-amber-400 transition transform hover:-translate-y-1 shadow-2xl relative overflow-hidden group">
+                    <div class="corner-filigree-tl"></div>
+                    <div class="corner-filigree-tr"></div>
+                    <div class="corner-filigree-bl"></div>
+                    <div class="corner-filigree-br"></div>
+
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase text-amber-300 tracking-wider bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 animate-pulse">
+                          🔥 CHẾ ĐỘ 2 • MỚI NÂNG CẤP
+                        </span>
+                        <span class="text-xs text-amber-400 font-mono font-bold">30 Câu Hỏi Liên Tục</span>
+                      </div>
+
+                      <div class="h-36 rounded-2xl overflow-hidden border border-white/20 relative shadow-inner">
+                        <img src="/assets/maps/map_volcano.png" alt="Hành Trình 30 Câu" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <span class="absolute bottom-2 left-3 font-fantasy font-black text-base text-yellow-300 drop-shadow">
+                          Đấu Trường 30 Câu Hỏi
+                        </span>
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <h3 class="text-xl sm:text-2xl font-black font-fantasy text-white">Hành Trình Tri Thức – 30 Câu</h3>
+                        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                          Chiến đấu liên tục qua 30 câu hỏi do bạn tự soạn. Tự do lựa chọn bản đồ (Rừng, Hang động, Lâu đài, Núi lửa), nhân vật và kiểu chiến đấu Solo Boss hoặc Chuỗi Quái!
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="pt-2">
+                      <button onClick={() => {
+                        window.rpgSound.playClick();
+                        loadPublishedQuestionSets();
+                        setScreen('journey_select_set');
+                      }} class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 text-white font-black text-base shadow-xl shadow-amber-500/30 font-fantasy flex items-center justify-center gap-2 transition transform active:scale-95">
+                        <span>⚔️</span> BẮT ĐẦU HÀNH TRÌNH 30 CÂU
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Link Quản Lý Bộ Câu Hỏi Cho Giáo Viên / Người Soạn */}
+                <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-300">
+                  <span>💡 Bạn muốn tự tạo đề 30 câu hỏi của riêng mình?</span>
+                  <a href="/creator.html" class="px-5 py-2.5 rounded-xl bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 font-bold text-amber-300 transition flex items-center gap-2">
+                    <span>✏️</span> Mở EduQuest Creator Studio (Tự Tạo Bộ 30 Câu)
+                  </a>
+                </div>
+
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: BƯỚC 1 - CHỌN BỘ CÂU HỎI (JOURNEY SELECT SET)    */}
+            {/* ======================================================== */}
+            {screen === 'journey_select_set' && (
+              <div class="w-full max-w-4xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/20 pb-4">
+                  <div>
+                    <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">HÀNH TRÌNH 30 CÂU • BƯỚC 1/4</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-white mt-0.5">Chọn Bộ Câu Hỏi Học Tập</h2>
+                    <p class="text-xs text-gray-300">Chọn 1 bộ đề 30 câu do bạn đã tạo và xuất bản để bắt đầu khiêu chiến</p>
+                  </div>
+                  <button onClick={() => setScreen('landing')} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                    ← Quay lại
+                  </button>
+                </div>
+
+                {/* Danh sách bộ đề published */}
+                {loadingSets ? (
+                  <div class="text-center py-16 text-amber-300 font-bold">Đang tải danh sách bộ câu hỏi đã xuất bản...</div>
+                ) : publishedSets.length === 0 ? (
+                  <div class="p-8 rounded-2xl bg-black/60 border border-white/10 text-center space-y-4">
+                    <span class="text-4xl block">📜</span>
+                    <h3 class="text-lg font-black font-fantasy text-white">Chưa có bộ câu hỏi nào được Xuất Bản!</h3>
+                    <p class="text-xs text-gray-300 max-w-md mx-auto">
+                      Hệ thống không hardcode câu hỏi mặc định. Bạn hãy tự tạo và xuất bản bộ 30 câu hỏi của riêng mình trong Creator Studio để học sinh có thể chọn chơi nhé.
+                    </p>
+                    <div class="pt-2">
+                      <a href="/creator.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs font-fantasy shadow-lg">
+                        <span>✏️</span> Đến Trang Quản Lý & Tự Tạo Bộ 30 Câu Ngay
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[460px] overflow-y-auto pr-2">
+                    {publishedSets.map(set => (
+                      <div key={set.id} class={`p-5 rounded-3xl border-2 transition flex flex-col justify-between space-y-3 cursor-pointer ${
+                        journeySelectedSet?.id === set.id 
+                          ? 'border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400/50' 
+                          : 'border-white/10 bg-black/50 hover:border-white/30'
+                      }`} onClick={() => setJourneySelectedSet(set)}>
+                        
+                        <div class="space-y-2">
+                          <div class="flex items-center justify-between">
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-purple-500/30 text-purple-200 border border-purple-400/30">
+                              {set.subject.toUpperCase()} • LỚP {set.grade}
+                            </span>
+                            <span class="text-xs text-emerald-400 font-mono font-bold">Đủ 30 câu ✓</span>
+                          </div>
+
+                          <h3 class="font-extrabold text-base text-white">{set.title}</h3>
+                          <p class="text-xs text-amber-300 font-medium truncate">{set.topic || 'Chủ đề chung'}</p>
+                          <p class="text-[11px] text-gray-400 line-clamp-2">{set.description}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-white/10 flex items-center justify-between">
+                          <span class="text-[11px] text-gray-400">Độ khó: <span class="text-white font-bold">{set.difficulty}</span></span>
+                          <button onClick={() => {
+                            setJourneySelectedSet(set);
+                            setScreen('journey_select_map');
+                          }} class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 font-black text-xs text-white shadow">
+                            CHỌN BỘ NÀY ⚔️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {journeySelectedSet && (
+                  <div class="pt-4 border-t border-amber-500/20 flex items-center justify-between">
+                    <span class="text-xs font-bold text-amber-300">
+                      Đã chọn: <span class="text-white">{journeySelectedSet.title}</span>
+                    </span>
+                    <button onClick={() => setScreen('journey_select_map')} class="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 font-black text-xs text-white font-fantasy shadow-lg">
+                      TIẾP TỤC: CHỌN BẢN ĐỒ ➡️
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: BƯỚC 2 - CHỌN BẢN ĐỒ CHIẾN ĐẤU (4 BẢN ĐỒ)        */}
+            {/* ======================================================== */}
+            {screen === 'journey_select_map' && (
+              <div class="w-full max-w-4xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/20 pb-4">
+                  <div>
+                    <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">HÀNH TRÌNH 30 CÂU • BƯỚC 2/4</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-white mt-0.5">Chọn Bản Đồ Chiến Đấu</h2>
+                    <p class="text-xs text-gray-300">Bối cảnh trận đấu 30 câu sẽ diễn ra trên bản đồ bạn đã chọn</p>
+                  </div>
+                  <button onClick={() => setScreen('journey_select_set')} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                    ← Quay lại
+                  </button>
+                </div>
+
+                {/* 4 Thẻ Bản Đồ Với Hình Ảnh Tham Chiếu Thực Tế */}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {BATTLE_MAPS.map(mapItem => {
+                    const isSelected = journeySelectedMap.id === mapItem.id;
+
+                    return (
+                      <div key={mapItem.id} onClick={() => {
+                        window.rpgSound.playClick();
+                        setJourneySelectedMap(mapItem);
+                      }} class={`p-4 rounded-3xl border-3 cursor-pointer transition transform hover:scale-102 flex flex-col justify-between space-y-3 ${
+                        isSelected 
+                          ? 'border-amber-400 bg-amber-500/20 shadow-2xl ring-4 ring-amber-400/40' 
+                          : 'border-white/15 bg-black/60 hover:border-white/30'
+                      }`}>
+                        
+                        <div class="h-40 rounded-2xl overflow-hidden border border-white/20 relative shadow-inner">
+                          <img src={mapItem.image} alt={mapItem.name} class="w-full h-full object-cover" />
+                          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                          {isSelected && (
+                            <span class="absolute top-2 right-2 bg-amber-400 text-black font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase shadow">
+                              ĐÃ CHỌN
+                            </span>
+                          )}
+                          <span class="absolute bottom-2 left-3 font-fantasy font-black text-sm text-yellow-300 drop-shadow">
+                            {mapItem.name}
+                          </span>
+                        </div>
+
+                        <div>
+                          <div class="flex items-center justify-between text-xs mb-1">
+                            <span class="font-extrabold text-white text-base">{mapItem.name}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-amber-300">
+                              {mapItem.tag}
+                            </span>
+                          </div>
+                          <p class="text-xs text-gray-300 leading-snug">{mapItem.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div class="pt-4 border-t border-amber-500/20 flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300">
+                    Bản đồ đã chọn: <span class="text-white">{journeySelectedMap.name}</span>
+                  </span>
+                  <button onClick={() => setScreen('journey_select_hero')} class="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 font-black text-xs text-white font-fantasy shadow-lg">
+                    TIẾP TỤC: CHỌN NHÂN VẬT ➡️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: BƯỚC 3 - CHỌN NHÂN VẬT (JOURNEY SELECT HERO)     */}
+            {/* ======================================================== */}
+            {screen === 'journey_select_hero' && (
+              <div class="w-full max-w-4xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/20 pb-4">
+                  <div>
+                    <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">HÀNH TRÌNH 30 CÂU • BƯỚC 3/4</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-white mt-0.5">Chọn Nhân Vật Chiến Đấu</h2>
+                    <p class="text-xs text-gray-300">Nhân vật sẽ đồng hành và tung chiêu thức xuyên suốt 30 câu hỏi</p>
+                  </div>
+                  <button onClick={() => setScreen('journey_select_map')} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                    ← Quay lại
+                  </button>
+                </div>
+
+                {/* 3 Thẻ Nhân Vật Lớn (Warrior, Mage, Archer) */}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.values(window.RPG_DATA.classes).map(c => {
+                    const isSelected = journeySelectedHero === c.id;
+
+                    return (
+                      <div key={c.id} onClick={() => {
+                        window.rpgSound.playClick();
+                        setJourneySelectedHero(c.id);
+                      }} class={`p-4 rounded-3xl border-3 cursor-pointer transition transform hover:scale-102 flex flex-col justify-between space-y-3 ${
+                        isSelected 
+                          ? 'border-amber-400 bg-amber-500/20 shadow-2xl ring-4 ring-amber-400/40' 
+                          : 'border-white/15 bg-black/60 hover:border-white/30'
+                      }`}>
+                        
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="text-gray-400 font-extrabold uppercase">{c.englishTitle}</span>
+                          {isSelected && (
+                            <span class="bg-amber-400 text-black font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase">
+                              ĐÃ CHỌN
+                            </span>
+                          )}
+                        </div>
+
+                        <div class="h-44 flex items-center justify-center hero-sprite-idle">
+                          <img src={c.image} alt={c.name} class="h-full object-contain filter drop-shadow-xl" />
+                        </div>
+
+                        <div>
+                          <h4 class="font-black text-lg text-white flex items-center gap-2">
+                            <img src={c.weaponIcon} class="w-5 h-5 object-contain" />
+                            {c.name}
+                          </h4>
+                          <p class="text-xs text-gray-300 mt-1 leading-snug">{c.description}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-white/10 grid grid-cols-3 gap-1 text-[10px] text-center">
+                          <div class="bg-black/50 p-1 rounded-xl">
+                            <span class="text-gray-400 block">HP</span>
+                            <span class="font-bold text-emerald-400 font-mono">{c.baseStats.hp}</span>
+                          </div>
+                          <div class="bg-black/50 p-1 rounded-xl">
+                            <span class="text-gray-400 block">ATK</span>
+                            <span class="font-bold text-red-400 font-mono">{c.baseStats.atk}</span>
+                          </div>
+                          <div class="bg-black/50 p-1 rounded-xl">
+                            <span class="text-gray-400 block">SPD</span>
+                            <span class="font-bold text-yellow-400 font-mono">{c.baseStats.spd}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div class="pt-4 border-t border-amber-500/20 flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300">
+                    Nhân vật đã chọn: <span class="text-white">{window.RPG_DATA.classes[journeySelectedHero]?.name}</span>
+                  </span>
+                  <button onClick={() => setScreen('journey_select_battle_type')} class="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 font-black text-xs text-white font-fantasy shadow-lg">
+                    TIẾP TỤC: CHỌN QUÁI VẬT ➡️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: BƯỚC 4 - CHỌN KIỂU CHIẾN ĐẤU & QUÁI VẬT          */}
+            {/* ======================================================== */}
+            {screen === 'journey_select_battle_type' && (
+              <div class="w-full max-w-4xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/20 pb-4">
+                  <div>
+                    <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">HÀNH TRÌNH 30 CÂU • BƯỚC 4/4</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-white mt-0.5">Chọn Quái Vật & Kiểu Trận Đấu</h2>
+                    <p class="text-xs text-gray-300">Chọn đấu với 1 Boss xuyên suốt 30 câu hoặc vượt qua Chuỗi quái vật</p>
+                  </div>
+                  <button onClick={() => setScreen('journey_select_hero')} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                    ← Quay lại
+                  </button>
+                </div>
+
+                {/* 2 Kiểu Chiến Đấu Lớn */}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  <div onClick={() => setJourneyBattleType('solo_boss')}
+                    class={`p-5 rounded-3xl border-3 cursor-pointer transition flex flex-col justify-between space-y-3 ${
+                      journeyBattleType === 'solo_boss' 
+                        ? 'border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400/50' 
+                        : 'border-white/15 bg-black/60 hover:border-white/30'
+                    }`}>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-black uppercase text-amber-300">👑 KIỂU A</span>
+                      {journeyBattleType === 'solo_boss' && (
+                        <span class="text-[10px] bg-amber-400 text-black font-black px-2 py-0.5 rounded-full uppercase">ĐÃ CHỌN</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-black font-fantasy text-white">Solo Boss – Đấu 1 Trùm Xuyên Suốt</h3>
+                      <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                        Chọn 1 Boss yêu thích để chiến đấu liên tục suốt 30 câu hỏi. Máu Boss được cân bằng, nếu hết máu sớm sẽ chuyển phase cuồng bạo tiếp tục chiến đấu!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div onClick={() => setJourneyBattleType('monster_journey')}
+                    class={`p-5 rounded-3xl border-3 cursor-pointer transition flex flex-col justify-between space-y-3 ${
+                      journeyBattleType === 'monster_journey' 
+                        ? 'border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400/50' 
+                        : 'border-white/15 bg-black/60 hover:border-white/30'
+                    }`}>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-black uppercase text-purple-300">🐉 KIỂU B</span>
+                      {journeyBattleType === 'monster_journey' && (
+                        <span class="text-[10px] bg-amber-400 text-black font-black px-2 py-0.5 rounded-full uppercase">ĐÃ CHỌN</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-black font-fantasy text-white">Monster Journey – Chuỗi Quái Vật</h3>
+                      <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                        Hạ gục từng quái vật: Câu 1-10 (Quái sơ cấp), Câu 11-20 (Quái tinh anh), Câu 21-30 (Trùm tối thượng). Quái mới xuất hiện ngay mà không rời sàn đấu!
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Nếu chọn Solo Boss: Cho phép chọn 1 trong 4 Boss */}
+                {journeyBattleType === 'solo_boss' && (
+                  <div class="space-y-3 pt-2">
+                    <label class="block text-xs font-bold text-amber-300 uppercase">Chọn Boss Bạn Muốn Đối Đầu:</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {SOLO_BOSS_ROSTER.map(boss => {
+                        const isBossSelected = journeySelectedBoss.id === boss.id;
+                        return (
+                          <div key={boss.id} onClick={() => setJourneySelectedBoss(boss)}
+                            class={`p-3 rounded-2xl border-2 cursor-pointer transition text-center space-y-2 ${
+                              isBossSelected ? 'border-amber-400 bg-amber-500/20 shadow-lg' : 'border-white/10 bg-black/60 hover:border-white/30'
+                            }`}>
+                            <div class="h-20 flex items-center justify-center monster-sprite-idle">
+                              <img src={boss.image} alt={boss.name} class="h-full object-contain filter drop-shadow" />
+                            </div>
+                            <h5 class="text-xs font-bold text-white truncate">{boss.name}</h5>
+                            <span class="text-[10px] text-red-400 font-mono block">HP: {boss.baseHp}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* NÚT BẮT ĐẦU HÀNH TRÌNH CHÍNH THỨC */}
+                <div class="pt-4 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div class="text-xs text-gray-300 space-y-0.5">
+                    <div>Bộ: <span class="text-white font-bold">{journeySelectedSet?.title}</span> (30 câu)</div>
+                    <div>Bản đồ: <span class="text-amber-300 font-bold">{journeySelectedMap?.name}</span> • Tướng: <span class="text-purple-300 font-bold">{window.RPG_DATA.classes[journeySelectedHero]?.name}</span></div>
+                  </div>
+
+                  <button onClick={startJourneyAdventure} class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-red-600 via-amber-500 to-yellow-500 hover:brightness-110 font-black text-base text-black shadow-2xl shadow-amber-500/40 font-fantasy flex items-center justify-center gap-2 transform hover:scale-105 active:scale-95 transition">
+                    <img src="/assets/items/sword.png" class="w-6 h-6 object-contain" />
+                    BẮT ĐẦU HÀNH TRÌNH 30 CÂU!
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: MÀN HÌNH CHIẾN ĐẤU LIÊN TỤC 30 CÂU (BATTLE)     */}
+            {/* ======================================================== */}
+            {screen === 'journey_battle' && journeySession && (
+              <div class="w-full max-w-5xl space-y-4 animate-fade-in relative text-left">
+                
+                {/* 1. TOP BATTLE HUD LIÊN TỤC 30 CÂU */}
+                <div class="w-full bg-black/85 border-2 border-amber-500/40 rounded-3xl p-3 sm:p-4 backdrop-blur-md shadow-2xl flex items-center justify-between gap-2 sm:gap-4">
+                  
+                  {/* Hero HUD */}
+                  <div class="flex items-center gap-3 w-44 sm:w-60">
+                    <div class="w-12 h-12 rounded-full border-2 border-amber-400 bg-gradient-to-tr from-amber-600/30 to-black p-0.5 overflow-hidden shadow-lg shrink-0">
+                      <img src={window.RPG_DATA.classes[journeySession.heroClass]?.avatar} alt="Hero" class="w-full h-full object-contain" />
+                    </div>
+                    <div class="w-full space-y-1">
+                      <span class="text-xs sm:text-sm font-extrabold text-white block truncate">{hero.name}</span>
+                      <div class="w-full bg-black/60 h-2.5 rounded-full border border-emerald-500/40 overflow-hidden">
+                        <div class="bg-gradient-to-r from-emerald-500 to-green-400 h-full transition-all duration-300"
+                          style={{ width: `${Math.round((journeySession.heroCurrentHp / calculatedStats.maxHp) * 100)}%` }}></div>
+                      </div>
+                      <span class="text-[9px] text-emerald-300 font-mono block">{journeySession.heroCurrentHp}/{calculatedStats.maxHp} HP</span>
+                    </div>
+                  </div>
+
+                  {/* THANH TIẾN TRÌNH TRỰC QUAN: HÀNH TRÌNH CÂU X / 30 */}
+                  <div class="flex-1 max-w-xs sm:max-w-md text-center px-2 space-y-1">
+                    <div class="flex items-center justify-between text-[11px] font-black">
+                      <span class="text-amber-300 font-fantasy uppercase tracking-wider">
+                        HÀNH TRÌNH TRI THỨC
+                      </span>
+                      <span class="text-yellow-400 font-mono">
+                        CÂU {journeySession.currentQIndex + 1} / 30
+                      </span>
+                    </div>
+
+                    <div class="w-full bg-black/60 h-3 rounded-full border border-amber-400/50 overflow-hidden p-0.5 shadow-inner">
+                      <div class="h-full rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-yellow-400 transition-all duration-400 shadow-[0_0_12px_#f59e0b]"
+                        style={{ width: `${Math.round(((journeySession.currentQIndex + 1) / 30) * 100)}%` }}></div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[9px] text-gray-300 font-mono">
+                      <span>Đúng: <strong class="text-emerald-400">{journeySession.correctCount}</strong></span>
+                      <span>Vàng: <strong class="text-amber-300">+{journeySession.accumulatedGold}</strong></span>
+                      <span>EXP: <strong class="text-purple-300">+{journeySession.accumulatedExp}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Monster / Boss HUD */}
+                  <div class="flex items-center gap-3 w-44 sm:w-60 justify-end text-right">
+                    <div class="w-full space-y-1">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <span class="text-red-400 font-black text-[10px] uppercase">
+                          {journeySession.monster.isBoss ? '👑 TRÙM' : 'QUÁI'}
+                        </span>
+                        <span class="text-xs sm:text-sm font-extrabold text-white truncate max-w-[120px]">
+                          {journeySession.monster.name}
+                        </span>
+                      </div>
+                      <div class="w-full bg-black/60 h-2.5 rounded-full border border-red-500/40 overflow-hidden">
+                        <div class="hp-bar-fill h-full transition-all duration-300"
+                          style={{ width: `${Math.round((journeySession.monster.hp / journeySession.monster.maxHp) * 100)}%` }}></div>
+                      </div>
+                      <span class="text-[9px] text-red-300 font-mono block">{journeySession.monster.hp}/{journeySession.monster.maxHp} HP</span>
+                    </div>
+
+                    <div class="w-12 h-12 rounded-full border-2 border-red-500 bg-gradient-to-tr from-red-950 to-black p-0.5 overflow-hidden shadow-lg shrink-0">
+                      <img src={journeySession.monster.image} alt="Monster" class="w-full h-full object-contain" />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* 2. ĐẤU TRƯỜNG VỚI NỀN LÀ BẢN ĐỒ ĐÃ CHỌN (CHUẨN 4 ẢNH) */}
+                <div class="relative w-full rounded-3xl overflow-hidden border-2 border-amber-500/40 shadow-2xl min-h-[300px] sm:min-h-[360px] flex items-center justify-between p-6">
+                  {/* Background là bức ảnh bản đồ người chơi đã chọn */}
+                  <img src={journeySession.map.image} alt={journeySession.map.name} class="absolute inset-0 w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30 pointer-events-none"></div>
+
+                  {/* Side Navigation Buttons */}
+                  <div class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col gap-3">
+                    <button onClick={() => {
+                      if (confirm("Tạm dừng và lưu lại phiên chơi để lần sau tiếp tục?")) {
+                        setScreen('landing');
+                      }
+                    }} class="gilded-action-btn" title="Tạm dừng & Lưu tiến trình">
+                      <span>⏸️</span>
+                    </button>
+
+                    <button onClick={() => setShowBattleBag(!showBattleBag)} class="gilded-action-btn" title="Mở Túi Dược Phẩm">
+                      <img src="/assets/items/potion_hp.png" class="w-6 h-6 object-contain" />
+                    </button>
+
+                    <button onClick={() => {
+                      const next = !journeySession.autoAdvance;
+                      setJourneySession({ ...journeySession, autoAdvance: next });
+                    }} class={`gilded-action-btn ${journeySession.autoAdvance ? 'ring-2 ring-yellow-400' : ''}`} 
+                      title={journeySession.autoAdvance ? "Tự chuyển câu: BẬT" : "Tự chuyển câu: TẮT"}>
+                      <span class="text-xs font-black">{journeySession.autoAdvance ? '⚡' : '👆'}</span>
+                    </button>
+                  </div>
+
+                  {/* Floating Damage Popup */}
+                  {journeySession.damageAnimation && (
+                    <div class={`absolute top-1/3 left-1/2 transform -translate-x-1/2 z-30 font-black text-3xl sm:text-5xl animate-bounce drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] ${
+                      journeySession.damageAnimation.isMonster ? 'text-rose-400' : 'text-yellow-300'
+                    }`}>
+                      {journeySession.damageAnimation.text}
+                    </div>
+                  )}
+
+                  {/* Hero Sprite bên trái */}
+                  <div class={`flex items-end gap-3 z-10 pl-16 sm:pl-20 transition-transform ${heroAttackAnim ? 'hero-attacking-anim' : ''}`}>
+                    <div class="flex flex-col items-center">
+                      <img src={window.RPG_DATA.classes[journeySession.heroClass]?.image} alt="Hero" 
+                        class="h-44 sm:h-56 object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.8)] hero-sprite-idle" />
+                      <div class="entity-shadow -mt-4"></div>
+                    </div>
+                  </div>
+
+                  {/* Quái vật Sprite bên phải */}
+                  <div class={`flex flex-col items-center z-10 pr-6 sm:pr-12 transition-transform ${
+                    monsterHitAnim ? 'boss-damaged-anim' : 'monster-sprite-idle'
+                  }`}>
+                    <img src={journeySession.monster.image} alt={journeySession.monster.name} 
+                      class={`h-44 sm:h-60 object-contain filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.9)] ${
+                        journeySession.monster.isEnraged ? 'filter drop-shadow-[0_0_35px_#ef4444] scale-110' : ''
+                      }`} />
+                    <div class="entity-shadow -mt-4"></div>
+
+                    {journeySession.monster.isEnraged && (
+                      <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-red-600 text-white font-black animate-pulse mt-1">
+                        ⚠️ NỔI GIẬN CUỒNG BẠO!
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* IN-BATTLE INVENTORY DRAWER */}
+                {showBattleBag && (
+                  <div class="p-4 rounded-3xl bg-black/95 border-2 border-amber-400 shadow-2xl flex items-center justify-between gap-4 animate-fade-in">
+                    <span class="text-xs font-bold text-amber-300">Dùng Bình Dược Phẩm:</span>
+                    <div class="flex items-center gap-3">
+                      {hero.inventory.filter(i => i.type === 'potion').map(pot => (
+                        <button key={pot.id} onClick={() => usePotion(pot)}
+                          class="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center gap-2 text-xs font-bold">
+                          <img src={pot.image} class="w-5 h-5 object-contain" />
+                          <span>{pot.name} (x{pot.count})</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowBattleBag(false)} class="text-xs text-gray-400 hover:text-white">Đóng ✕</button>
+                  </div>
+                )}
+
+                {/* 3. BOTTOM QUESTION PARCHMENT BOX VỚI KATEX MATH */}
+                {(() => {
+                  const currentQ = journeySession.setSnapshot[journeySession.currentQIndex];
+                  if (!currentQ) return null;
+
+                  return (
+                    <div class="fantasy-parchment-box p-5 sm:p-7 space-y-4 shadow-2xl relative">
+                      <div class="corner-filigree-tl"></div>
+                      <div class="corner-filigree-tr"></div>
+                      <div class="corner-filigree-bl"></div>
+                      <div class="corner-filigree-br"></div>
+
+                      {/* Header câu hỏi */}
+                      <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+                        <div class="flex items-center gap-2">
+                          <span class="px-3 py-1 rounded-xl bg-purple-700/80 font-black text-xs text-amber-200 border border-purple-400/50">
+                            Câu {journeySession.currentQIndex + 1} / 30
+                          </span>
+                          <span class="text-xs text-amber-100 font-bold">{journeySession.setTitle}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-amber-300 font-black">⚔️ Sát thương: +{currentQ.damage || 35}</span>
+                          {currentQ.explanation && (
+                            <button onClick={() => alert(`💡 GỢI Ý:\n\n${currentQ.explanation}`)}
+                              class="px-3 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 font-bold text-xs border border-yellow-500/40 flex items-center gap-1 transition">
+                              <span>💡</span> Gợi Ý
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Nội dung câu hỏi KaTeX */}
+                      <h3 class="text-lg sm:text-2xl font-extrabold text-white text-center py-2 leading-relaxed">
+                        <MathText text={currentQ.question} />
+                      </h3>
+
+                      {/* 4 Nút 3D Jewel-Toned Buttons (A: Lam, B: Lục, C: Tím, D: Đỏ) */}
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                        {currentQ.options.map((opt, oIdx) => {
+                          const isSelected = journeySession.selectedAnswer === opt;
+                          const isCorrectAns = opt === currentQ.correctAnswer;
+                          const btnStyles = ['fantasy-btn-a', 'fantasy-btn-b', 'fantasy-btn-c', 'fantasy-btn-d'];
+                          const btnLetters = ['A', 'B', 'C', 'D'];
+
+                          return (
+                            <button key={opt} disabled={journeySession.isAnswered} onClick={() => handleJourneyAnswer(opt)}
+                              class={`p-4 rounded-2xl font-bold text-sm sm:text-base text-left flex items-center justify-between text-white ${btnStyles[oIdx]} ${
+                                journeySession.isAnswered && isCorrectAns ? 'ring-4 ring-yellow-300 brightness-110' : ''
+                              } ${
+                                journeySession.isAnswered && isSelected && !isCorrectAns ? 'opacity-50 ring-2 ring-red-400' : ''
+                              }`}>
+                              
+                              <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-full bg-black/40 border border-white/40 flex items-center justify-center font-black text-amber-300 text-xs font-mono">
+                                  {btnLetters[oIdx]}
+                                </span>
+                                <span><MathText text={opt} /></span>
+                              </div>
+
+                              {journeySession.isAnswered && isCorrectAns && <span class="text-yellow-300 font-black text-sm">✓ ĐÚNG</span>}
+                              {journeySession.isAnswered && isSelected && !isCorrectAns && <span class="text-white font-black text-sm">✗ SAI</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Giải thích sau khi trả lời & Nút chuyển câu kế tiếp */}
+                      {journeySession.isAnswered && (
+                        <div class="p-4 rounded-2xl bg-blue-950/80 border-2 border-blue-400 text-xs text-blue-200 space-y-2 animate-fade-in">
+                          <div class="flex items-center justify-between">
+                            <span class="font-extrabold uppercase text-blue-300">
+                              {journeySession.isCorrect ? '🎉 Trả lời chính xác!' : '💡 Lời giải thích:'}
+                            </span>
+                            <button onClick={advanceToNextJourneyQuestion} class="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-black font-black text-xs font-fantasy shadow-lg transform hover:scale-105 active:scale-95 transition">
+                              {journeySession.currentQIndex + 1 === 30 ? 'HOÀN THÀNH HÀNH TRÌNH 🏆' : 'CÂU TIẾP THEO ➡️'}
+                            </button>
+                          </div>
+                          {currentQ.explanation && (
+                            <p class="leading-relaxed"><MathText text={currentQ.explanation} /></p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Bottom Status Bar */}
+                      <div class="pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-300 gap-2">
+                        <span class="text-amber-300 font-bold">
+                          Đã vượt qua: {journeySession.currentQIndex + 1}/30 câu
+                        </span>
+
+                        {journeySession.combo >= 10 ? (
+                          <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-yellow-300 font-black text-xs animate-bounce shadow">
+                            🌌 SUPER ATTACK! (Combo {journeySession.combo}x - x2.2 Sát thương)
+                          </span>
+                        ) : journeySession.combo >= 5 ? (
+                          <span class="px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black text-xs animate-bounce shadow">
+                            ⚡ KỸ NĂNG ĐẶC BIỆT! (Combo {journeySession.combo}x)
+                          </span>
+                        ) : journeySession.combo >= 3 ? (
+                          <span class="px-3 py-1 rounded-full bg-red-600 text-white font-black text-xs shadow">
+                            🔥 COMBO {journeySession.combo}x!
+                          </span>
+                        ) : null}
+                      </div>
+
+                    </div>
+                  );
+                })()}
+
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* CHẾ ĐỘ 2: TỔNG KẾT HÀNH TRÌNH 30 CÂU (VICTORY SUMMARY)     */}
+            {/* ======================================================== */}
+            {screen === 'journey_victory' && journeySession && (
+              <div class="w-full max-w-2xl fantasy-parchment-box p-6 sm:p-8 text-center space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="space-y-1 text-center">
+                  <span class="text-xs uppercase font-black text-amber-400 tracking-widest">
+                    ĐÃ HOÀN THÀNH TOÀN BỘ 30 CÂU HỎI!
+                  </span>
+                  <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+                    🏆 HOÀN THÀNH HÀNH TRÌNH TRI THỨC 🏆
+                  </h2>
+                  <p class="text-xs text-gray-300">
+                    Bộ đề: <strong class="text-amber-300">{journeySession.setTitle}</strong> • Bản đồ: <strong class="text-emerald-300">{journeySession.map.name}</strong>
+                  </p>
+                </div>
+
+                {/* Bảng Chỉ Số Đạt Được */}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-black/60 border border-amber-500/30 text-center">
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] text-gray-400 block uppercase">Số Câu Đúng</span>
+                    <span class="text-xl font-black text-emerald-400 font-mono">
+                      {journeySession.correctCount} / 30
+                    </span>
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] text-gray-400 block uppercase">Độ Chính Xác</span>
+                    <span class="text-xl font-black text-cyan-400 font-mono">
+                      {Math.round((journeySession.correctCount / 30) * 100)}%
+                    </span>
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] text-gray-400 block uppercase">Tiền Vàng</span>
+                    <span class="text-xl font-black text-amber-400 font-mono">
+                      +{journeySession.accumulatedGold + 100} 🪙
+                    </span>
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] text-gray-400 block uppercase">Kinh Nghiệm</span>
+                    <span class="text-xl font-black text-purple-400 font-mono">
+                      +{journeySession.accumulatedExp + 150} EXP
+                    </span>
+                  </div>
+                </div>
+
+                {/* RƯƠNG PHẦN THƯỞNG HOÀNG GIA */}
+                <div onClick={handleOpenMysteryChest}
+                  class={`p-6 rounded-3xl border-2 border-amber-400/60 cursor-pointer shadow-2xl transition transform hover:scale-105 text-center ${
+                    openedChest ? 'bg-amber-950/30' : 'bg-gradient-to-b from-amber-600/30 to-black chest-wiggle'
+                  }`}>
+                  <div class="h-24 flex items-center justify-center">
+                    <img src={openedChest ? "/assets/items/chest_open.png" : "/assets/items/chest_closed.png"} 
+                      alt="Chest" class="h-full object-contain filter drop-shadow-2xl" />
+                  </div>
+                  <span class="text-xs sm:text-sm font-black text-amber-300 block uppercase mt-2">
+                    {openedChest ? '🎁 ĐÃ MỞ RƯƠNG THÀNH CÔNG!' : 'CHẠM VÀO ĐỂ MỞ RƯƠNG BÁU PHẦN THƯỞNG!'}
+                  </span>
+                  {chestRewardItem && (
+                    <div class="mt-2 p-2.5 rounded-2xl bg-black/60 border border-amber-400/50 flex items-center justify-center gap-3">
+                      <img src={chestRewardItem.image} class="w-8 h-8 object-contain" />
+                      <div class="text-left">
+                        <span class="text-xs font-bold text-white block">Nhận: {chestRewardItem.name}</span>
+                        <span class="text-[10px] text-amber-300 block">{chestRewardItem.desc}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4 NÚT HÀNH ĐỘNG CUỐI HÀNH TRÌNH (THEO YÊU CẦU MỤC 10) */}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                  <button onClick={() => setShowWrongReviewModal(true)} disabled={journeySession.wrongCount === 0}
+                    class="p-3 rounded-2xl bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/40 text-rose-200 text-xs font-bold disabled:opacity-40 transition">
+                    📖 Xem Lại Câu Sai ({journeySession.wrongCount})
+                  </button>
+
+                  <button onClick={startJourneyAdventure} class="p-3 rounded-2xl bg-amber-500/30 hover:bg-amber-500/50 border border-amber-400/40 text-amber-200 text-xs font-bold transition">
+                    🔄 Chơi Lại Bộ Này
+                  </button>
+
+                  <button onClick={() => {
+                    loadPublishedQuestionSets();
+                    setScreen('journey_select_set');
+                  }} class="p-3 rounded-2xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 text-xs font-bold transition">
+                    📜 Chọn Bộ Khác
+                  </button>
+
+                  <button onClick={() => setScreen('landing')} class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition">
+                    🏰 Về Trang Chủ
+                  </button>
+                </div>
+
+                {/* MODAL XEM LẠI CÂU SAI */}
+                {showWrongReviewModal && (
+                  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+                    <div class="w-full max-w-2xl max-h-[85vh] flex flex-col fantasy-parchment-box p-6 space-y-4 text-left relative">
+                      <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+                        <h3 class="text-xl font-black font-fantasy text-amber-300">
+                          Xem Lại Các Câu Trả Lời Chưa Đúng ({journeySession.wrongCount} câu)
+                        </h3>
+                        <button onClick={() => setShowWrongReviewModal(false)} class="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                          Đóng ✕
+                        </button>
+                      </div>
+
+                      <div class="flex-1 overflow-y-auto space-y-3 pr-2">
+                        {journeySession.answersHistory.filter(h => !h.isCorrect).map((item, idx) => (
+                          <div key={idx} class="p-3.5 rounded-2xl bg-black/60 border border-red-500/30 space-y-2 text-xs">
+                            <div class="font-bold text-white flex items-center gap-2">
+                              <span class="w-6 h-6 rounded-full bg-red-600/40 text-red-300 flex items-center justify-center font-mono">
+                                {item.qIndex + 1}
+                              </span>
+                              <span><MathText text={item.question} /></span>
+                            </div>
+
+                            <div class="pl-8 space-y-1">
+                              <div class="text-rose-300">
+                                ❌ Bạn đã chọn: <strong><MathText text={item.chosenAnswer} /></strong>
+                              </div>
+                              <div class="text-emerald-300">
+                                ✅ Đáp án chính xác: <strong><MathText text={item.correctAnswer} /></strong>
+                              </div>
+                              {item.explanation && (
+                                <div class="text-gray-300 text-[11px] pt-1 italic">
+                                  💡 Lời giải: <MathText text={item.explanation} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* SCREEN 2: TẠO NHÂN VẬT (CHARACTER CREATION - MODE 1) */}
+            {screen === 'create_char' && (
+              <div class="w-full max-w-4xl bg-gray-900/95 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-2xl space-y-6 animate-fade-in text-left">
+                <div class="text-center space-y-1 border-b border-white/10 pb-4">
+                  <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-amber-300">Tạo Anh Hùng Của Bạn</h2>
+                  <p class="text-xs text-gray-400">Chọn tên, nghề nghiệp và linh vật đồng hành bước vào Học Viện Phiêu Lưu</p>
+                </div>
+
+                <div class="space-y-5">
+                  <div>
+                    <label class="block text-xs font-bold text-amber-300 uppercase mb-1">Tên Anh Hùng:</label>
+                    <input type="text" value={hero.name} onChange={(e) => setHero({ ...hero, name: e.target.value })}
+                      placeholder="Nhập tên nhân vật của bạn..." maxLength="18"
+                      class="w-full bg-black/50 border-2 border-white/20 focus:border-amber-400 rounded-2xl px-4 py-3 text-white font-bold text-sm outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-amber-300 uppercase mb-2">Chọn Nghề Nghiệp Khởi Đầu:</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {Object.values(window.RPG_DATA.classes).map(c => {
+                        const isSelected = hero.heroClass === c.id;
+                        return (
+                          <div key={c.id} onClick={() => {
+                            window.rpgSound.playClick();
+                            setHero({ ...hero, heroClass: c.id });
+                          }} class={`p-4 rounded-3xl border-2 cursor-pointer transition transform hover:scale-102 flex flex-col justify-between ${
+                            isSelected 
+                              ? 'border-amber-400 bg-gradient-to-b from-amber-500/20 to-black/80 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400/50' 
+                              : 'border-white/10 bg-black/40 hover:border-white/30'
+                          }`}>
+                            <div class="space-y-3">
+                              <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold uppercase text-gray-400">{c.englishTitle}</span>
+                                {isSelected && (
+                                  <span class="text-[10px] bg-amber-400 text-black font-black px-2 py-0.5 rounded-full uppercase">ĐÃ CHỌN</span>
+                                )}
+                              </div>
+
+                              <div class="h-44 flex items-center justify-center overflow-hidden">
+                                <img src={c.image} alt={c.name} class={`h-full object-contain filter drop-shadow-xl ${isSelected ? 'scale-105' : 'opacity-90'}`} />
+                              </div>
+
+                              <div>
+                                <h4 class="font-black text-lg text-white flex items-center gap-2">
+                                  <img src={c.weaponIcon} class="w-5 h-5 object-contain" />
+                                  {c.name}
+                                </h4>
+                                <p class="text-xs text-gray-300 mt-1 leading-snug">{c.description}</p>
+                              </div>
+                            </div>
+
+                            <div class="pt-3 mt-3 border-t border-white/10 grid grid-cols-3 gap-1 text-[10px] text-center">
+                              <div class="bg-black/50 p-1 rounded-xl">
+                                <span class="text-gray-400 block">HP Máu</span>
+                                <span class="font-bold text-emerald-400 font-mono">{c.baseStats.hp}</span>
+                              </div>
+                              <div class="bg-black/50 p-1 rounded-xl">
+                                <span class="text-gray-400 block">ATK Đánh</span>
+                                <span class="font-bold text-red-400 font-mono">{c.baseStats.atk}</span>
+                              </div>
+                              <div class="bg-black/50 p-1 rounded-xl">
+                                <span class="text-gray-400 block">DEF Giáp</span>
+                                <span class="font-bold text-blue-400 font-mono">{c.baseStats.def}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-amber-300 uppercase mb-2">Chọn Thú Cưng Khởi Đầu:</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {window.RPG_DATA.pets.map(p => {
+                        const isSelected = hero.activePetId === p.id;
+                        return (
+                          <div key={p.id} onClick={() => {
+                            window.rpgSound.playClick();
+                            setHero({ ...hero, activePetId: p.id, unlockedPets: [p.id] });
+                          }} class={`p-3 rounded-2xl border-2 cursor-pointer transition text-center space-y-1.5 ${
+                            isSelected 
+                              ? 'border-amber-400 bg-amber-500/20 shadow-lg' 
+                              : 'border-white/10 bg-black/40 hover:border-white/30'
+                          }`}>
+                            <div class="h-16 flex items-center justify-center">
+                              <img src={p.image} alt={p.name} class="h-full object-contain filter drop-shadow" />
+                            </div>
+                            <h5 class="text-xs font-bold text-white">{p.name}</h5>
+                            <p class="text-[10px] text-amber-300 font-medium leading-tight">{p.buffDesc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-4 flex items-center justify-between border-t border-white/10">
+                  <button onClick={() => setScreen('landing')} class="px-5 py-2.5 rounded-xl bg-white/10 text-xs font-bold hover:bg-white/20">
+                    ← Quay lại
+                  </button>
+                  <button onClick={() => {
+                    window.rpgSound.playClick();
+                    setHero(prev => ({ ...prev, hasCreated: true }));
+                    setScreen('subject_select');
+                  }} class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 font-black text-sm text-white shadow-xl shadow-rose-500/30 font-fantasy">
+                    TIẾP THEO: CHỌN MÔN HỌC ➡️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 3: CHỌN MÔN HỌC & KHỐI LỚP (MODE 1) */}
+            {screen === 'subject_select' && (
+              <div class="w-full max-w-2xl bg-gray-900/95 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-2xl space-y-6 animate-fade-in text-left">
+                <div class="text-center space-y-1 border-b border-white/10 pb-4">
+                  <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-amber-300">Chọn Môn Học & Cấp Độ</h2>
+                  <p class="text-xs text-gray-400">Các câu hỏi trong bản đồ sẽ được cá nhân hóa theo lựa chọn của bạn</p>
+                </div>
+
+                <div class="space-y-5">
+                  <div>
+                    <label class="block text-xs font-bold text-amber-300 uppercase mb-2">Khối Lớp Của Bạn:</label>
+                    <div class="grid grid-cols-5 gap-2">
+                      {[3, 4, 5, 6, 7].map(g => (
+                        <button key={g} onClick={() => {
+                          window.rpgSound.playClick();
+                          setHero({ ...hero, currentGrade: g });
+                        }} class={`py-3 rounded-2xl font-black text-sm border-2 transition ${
+                          hero.currentGrade === g 
+                            ? 'border-amber-400 bg-amber-500/30 text-amber-200 shadow-lg' 
+                            : 'border-white/10 bg-black/40 text-gray-400 hover:border-white/30'
+                        }`}>
+                          Lớp {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-amber-300 uppercase mb-2">Chọn Môn Học Thử Thách:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {[
+                        { id: 'math', name: 'Toán Học', desc: 'Số tự nhiên, phân số, hình học & toán thực tế', iconImg: '/assets/items/spellbook.png' },
+                        { id: 'english', name: 'Tiếng Anh', desc: 'Từ vựng, ngữ pháp, thì hiện tại & đọc hiểu', iconImg: '/assets/items/quest_scroll.png' },
+                        { id: 'science', name: 'Khoa Học', desc: 'Hiện tượng tự nhiên, sinh vật & trái đất', iconImg: '/assets/items/mana_crystal.png' }
+                      ].map(sub => {
+                        const isSelected = hero.currentSubject === sub.id;
+                        return (
+                          <div key={sub.id} onClick={() => {
+                            window.rpgSound.playClick();
+                            setHero({ ...hero, currentSubject: sub.id });
+                          }} class={`p-4 rounded-3xl border-2 cursor-pointer transition text-center space-y-2 ${
+                            isSelected 
+                              ? 'border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400/50' 
+                              : 'border-white/10 bg-black/40 hover:border-white/30'
+                          }`}>
+                            <div class="h-14 flex items-center justify-center">
+                              <img src={sub.iconImg} alt={sub.name} class="h-full object-contain filter drop-shadow" />
+                            </div>
+                            <h4 class="font-extrabold text-base text-white">{sub.name}</h4>
+                            <p class="text-[11px] text-gray-300 leading-snug">{sub.desc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-4 flex items-center justify-between border-t border-white/10">
+                  <button onClick={() => setScreen('create_char')} class="px-5 py-2.5 rounded-xl bg-white/10 text-xs font-bold hover:bg-white/20">
+                    ← Quay lại
+                  </button>
+                  <button onClick={() => {
+                    window.rpgSound.playClick();
+                    setScreen('world_map');
+                  }} class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 font-black text-sm text-white shadow-xl shadow-purple-500/30 font-fantasy">
+                    TIẾN VÀO BẢN ĐỒ THẾ GIỚI 🗺️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 4: WORLD MAP (MODE 1 - BẢN ĐỒ ĐẢO NỔI 10 ẢI) */}
+            {screen === 'world_map' && (
+              <div class="w-full space-y-4 animate-fade-in text-left">
+                
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-white/10">
+                  {window.RPG_DATA.worlds.map(w => {
+                    const isSelected = hero.currentWorldId === w.id;
+                    const isLocked = hero.level < w.requiredLevel;
+                    return (
+                      <button key={w.id} disabled={isLocked} onClick={() => {
+                        window.rpgSound.playClick();
+                        setHero({ ...hero, currentWorldId: w.id });
+                      }} class={`px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm border-2 flex items-center gap-2 shrink-0 transition ${
+                        isSelected 
+                          ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-lg shadow-amber-500/20' 
+                          : isLocked 
+                            ? 'opacity-40 border-white/10 bg-white/5 cursor-not-allowed text-gray-500' 
+                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/30'
+                      }`}>
+                        <span>{w.icon}</span>
+                        <span>{w.name}</span>
+                        {isLocked && <span class="text-[10px] bg-red-500/30 text-red-300 px-1.5 py-0.2 rounded font-mono">Cần Lv.{w.requiredLevel}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {(() => {
+                  const currentWorld = window.RPG_DATA.worlds.find(w => w.id === hero.currentWorldId) || window.RPG_DATA.worlds[0];
+
+                  return (
+                    <div class="relative w-full rounded-3xl overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-black min-h-[480px] sm:min-h-[560px] flex flex-col justify-between">
+                      <img src="/assets/world-map.jpg" alt="Bản Đồ EduQuest" class="absolute inset-0 w-full h-full object-cover" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-transparent to-black/60 pointer-events-none"></div>
+
+                      <div class="relative z-10 p-4 sm:p-5 flex items-center justify-between">
+                        <div class="bg-black/70 border border-amber-500/40 px-4 py-2 rounded-2xl backdrop-blur-md">
+                          <div class="flex items-center gap-2">
+                            <span class="text-2xl">{currentWorld.icon}</span>
+                            <h3 class="text-xl sm:text-2xl font-black font-fantasy text-amber-300">{currentWorld.name}</h3>
+                            <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30">
+                              {currentWorld.difficultyTag}
+                            </span>
+                          </div>
+                          <p class="text-xs text-gray-300 mt-0.5">{currentWorld.subtitle}</p>
+                        </div>
+
+                        {activePetData && (
+                          <div class="flex items-center gap-2.5 bg-black/75 border border-amber-400/40 px-3.5 py-2 rounded-2xl backdrop-blur-md pet-floating">
+                            <img src={activePetData.image} alt="Pet" class="w-8 h-8 object-contain" />
+                            <div class="text-left hidden sm:block">
+                              <span class="text-xs text-amber-300 font-bold block">{activePetData.name}</span>
+                              <span class="text-[10px] text-gray-300 block">{activePetData.buffDesc}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div class="absolute inset-0 z-20 pointer-events-none">
+                        {currentWorld.stages.map((stg, sIdx) => {
+                          const isCompleted = hero.completedStages.includes(stg.id);
+                          const isPrevCompleted = sIdx === 0 || hero.completedStages.includes(currentWorld.stages[sIdx - 1].id);
+                          const isOpen = isPrevCompleted && !isCompleted;
+                          const isLocked = !isPrevCompleted && !isCompleted;
+
+                          return (
+                            <div key={stg.id} class="absolute pointer-events-auto transform -translate-x-1/2 -translate-y-1/2"
+                              style={{ left: `${stg.mapX}%`, top: `${stg.mapY}%` }}>
+                              
+                              <button onClick={() => setStagePreview(stg)}
+                                class={`relative group flex flex-col items-center justify-center transition-transform hover:scale-115 active:scale-95`}>
+                                
+                                <div class={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 flex items-center justify-center p-1 shadow-2xl backdrop-blur-md transition ${
+                                  isCompleted 
+                                    ? 'border-emerald-400 bg-emerald-950/90 shadow-emerald-500/50' 
+                                    : isOpen 
+                                      ? 'border-amber-400 bg-amber-950/90 shadow-amber-500/60 map-node-active ring-4 ring-amber-400/40' 
+                                      : 'border-gray-600 bg-gray-950/80 opacity-60'
+                                }`}>
+                                  <img src={stg.monster.image} alt={stg.monster.name} class="w-full h-full object-contain filter drop-shadow" />
+                                </div>
+
+                                <span class={`absolute -bottom-2 px-2 py-0.2 rounded-full font-black text-[10px] font-mono shadow border ${
+                                  isCompleted ? 'bg-emerald-500 text-black border-emerald-300' :
+                                  isOpen ? 'bg-amber-400 text-black border-amber-200 animate-bounce' :
+                                  'bg-gray-800 text-gray-400 border-gray-600'
+                                }`}>
+                                  Ải {stg.stageNumber}
+                                </span>
+
+                                {isCompleted && (
+                                  <div class="absolute -top-3 text-[10px] text-yellow-400 drop-shadow">
+                                    ⭐⭐⭐
+                                  </div>
+                                )}
+
+                                {stg.isBoss && (
+                                  <span class="absolute -top-3 text-base animate-pulse">👑</span>
+                                )}
+                              </button>
+
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div class="relative z-10 p-3 sm:p-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-300 bg-black/60 backdrop-blur-md">
+                        <span class="flex items-center gap-1.5">
+                          <span>💡</span> Chạm vào biểu tượng Ải nhấp nháy trên bản đồ để xem thông tin và tham gia khiêu chiến!
+                        </span>
+                        <span class="font-bold text-amber-300 hidden sm:inline">Môn: {hero.currentSubject.toUpperCase()} (Lớp {hero.currentGrade})</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* MODAL XEM TRƯỚC ẢI CHIẾN ĐẤU */}
+                {stagePreview && (
+                  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div class="w-full max-w-md fantasy-parchment-box p-6 space-y-5 text-center relative">
+                      <div class="corner-filigree-tl"></div>
+                      <div class="corner-filigree-tr"></div>
+                      <div class="corner-filigree-bl"></div>
+                      <div class="corner-filigree-br"></div>
+
+                      <div class="space-y-1">
+                        <span class="text-xs font-black uppercase text-amber-400 tracking-widest">
+                          {stagePreview.isBoss ? '👑 TRÙM KHU VỰC' : '⚔️ THỬ THÁCH ẢI CHIẾN ĐẤU'}
+                        </span>
+                        <h3 class="text-2xl font-black font-fantasy text-white">{stagePreview.name}</h3>
+                        <p class="text-xs text-gray-300">{stagePreview.topic}</p>
+                      </div>
+
+                      <div class="py-2 flex flex-col items-center">
+                        <div class="h-32 flex items-center justify-center monster-sprite-idle">
+                          <img src={stagePreview.monster.image} alt={stagePreview.monster.name} class="h-full object-contain filter drop-shadow-2xl" />
+                        </div>
+                        <div class="entity-shadow -mt-2"></div>
+                        <h4 class="font-extrabold text-base text-red-400 mt-2">{stagePreview.monster.name}</h4>
+                        <span class="text-xs text-gray-400 font-mono">Máu: {stagePreview.monster.hp} HP • Công: {stagePreview.monster.atk} ATK</span>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2 p-3 rounded-2xl bg-black/50 border border-amber-500/30 text-xs">
+                        <div class="flex items-center justify-center gap-1.5 font-bold text-amber-300">
+                          <img src="/assets/items/gold_coins.png" class="w-4 h-4 object-contain" />
+                          <span>+{stagePreview.monster.goldReward} Vàng</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-1.5 font-bold text-emerald-300">
+                          <img src="/assets/items/medal.png" class="w-4 h-4 object-contain" />
+                          <span>+{stagePreview.monster.expReward} EXP</span>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center justify-center gap-3 pt-2">
+                        <button onClick={() => setStagePreview(null)} class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300">
+                          Đóng
+                        </button>
+                        <button onClick={() => startBattle(stagePreview)} class="px-8 py-3 rounded-2xl bg-gradient-to-r from-red-600 via-amber-500 to-yellow-500 hover:brightness-110 font-black text-sm text-black shadow-xl shadow-amber-500/40 font-fantasy flex items-center gap-2">
+                          <img src="/assets/items/sword.png" class="w-4 h-4 object-contain" />
+                          VÀO CHIẾN ĐẤU NGAY!
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* SCREEN 5: BATTLE (MODE 1) */}
+            {screen === 'battle' && currentBattle && (
+              <div class="w-full max-w-5xl space-y-4 animate-fade-in relative text-left">
+                
+                <div class="w-full bg-black/85 border-2 border-amber-500/40 rounded-3xl p-3 sm:p-4 backdrop-blur-md shadow-2xl flex items-center justify-between gap-2 sm:gap-4">
+                  
+                  <div class="flex items-center gap-3 w-48 sm:w-64">
+                    <div class="relative">
+                      <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-amber-400 bg-gradient-to-tr from-amber-600/30 to-black p-0.5 overflow-hidden shadow-lg">
+                        <img src={heroClassData.avatar} alt="Hero" class="w-full h-full object-contain" />
+                      </div>
+                      <span class="absolute -bottom-1 -right-1 bg-amber-500 text-black font-black text-[10px] px-1.5 py-0.2 rounded-full border border-black font-mono">
+                        Lv.{hero.level}
+                      </span>
+                    </div>
+
+                    <div class="w-full space-y-1">
+                      <span class="text-xs sm:text-sm font-extrabold text-white block truncate">{hero.name}</span>
+                      <div class="w-full bg-black/60 h-2.5 rounded-full border border-emerald-500/40 overflow-hidden">
+                        <div class="bg-gradient-to-r from-emerald-500 to-green-400 h-full transition-all duration-300"
+                          style={{ width: `${Math.round((currentBattle.heroCurrentHp / calculatedStats.maxHp) * 100)}%` }}></div>
+                      </div>
+                      <span class="text-[9px] text-emerald-300 font-mono block">{currentBattle.heroCurrentHp}/{calculatedStats.maxHp} HP</span>
+                    </div>
+                  </div>
+
+                  <div class="text-center px-2">
+                    <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider block">
+                      {hero.currentSubject.toUpperCase()} • LỚP {hero.currentGrade}
+                    </span>
+                    <div class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold text-xs font-fantasy mt-0.5">
+                      ⚔️ VÒNG {currentBattle.currentQIndex + 1}/{currentBattle.questions.length}
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 w-48 sm:w-64 justify-end text-right">
+                    <div class="w-full space-y-1">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <span class="text-red-400 font-black text-[10px] uppercase">{activeStage.isBoss ? '👑 TRÙM' : 'QUÁI'}</span>
+                        <span class="text-xs sm:text-sm font-extrabold text-white truncate max-w-[120px]">{currentBattle.monster.name}</span>
+                      </div>
+                      <div class="w-full bg-black/60 h-2.5 rounded-full border border-red-500/40 overflow-hidden">
+                        <div class="hp-bar-fill h-full transition-all duration-300"
+                          style={{ width: `${Math.round((currentBattle.monster.hp / currentBattle.monster.maxHp) * 100)}%` }}></div>
+                      </div>
+                      <span class="text-[9px] text-red-300 font-mono block">{currentBattle.monster.hp}/{currentBattle.monster.maxHp} HP</span>
+                    </div>
+
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-red-500 bg-gradient-to-tr from-red-950 to-black p-0.5 overflow-hidden shadow-lg shrink-0">
+                      <img src={currentBattle.monster.image} alt="Monster" class="w-full h-full object-contain" />
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="relative w-full rounded-3xl overflow-hidden border-2 border-amber-500/40 shadow-2xl min-h-[300px] sm:min-h-[360px] flex items-center justify-between p-6">
+                  <img src="/assets/battle-arena-bg.jpg" alt="Arena Background" class="absolute inset-0 w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+
+                  <div class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col gap-3">
+                    <button onClick={() => {
+                      if (confirm("Bạn có muốn rút lui về Bản Đồ Thế Giới không?")) setScreen('world_map');
+                    }} class="gilded-action-btn" title="Trở về Bản Đồ">
+                      <img src="/assets/items/quest_scroll.png" class="w-6 h-6 object-contain" />
+                    </button>
+
+                    <button onClick={() => setShowBattleBag(!showBattleBag)} class="gilded-action-btn" title="Mở Túi Đồ / Dùng Bình Thuốc">
+                      <img src="/assets/items/potion_hp.png" class="w-6 h-6 object-contain" />
+                    </button>
+
+                    <button onClick={() => {
+                      const next = window.rpgSound.toggleMusic();
+                      setIsMusicOn(next);
+                    }} class="gilded-action-btn" title="Bật/Tắt Nhạc">
+                      <span class="text-lg">{isMusicOn ? '🎵' : '🔇'}</span>
+                    </button>
+                  </div>
+
+                  {currentBattle.damageAnimation && (
+                    <div class={`absolute top-1/3 left-1/2 transform -translate-x-1/2 z-30 font-black text-3xl sm:text-5xl animate-bounce drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] ${
+                      currentBattle.damageAnimation.isMonster ? 'text-rose-400' : 'text-yellow-300'
+                    }`}>
+                      {currentBattle.damageAnimation.text}
+                    </div>
+                  )}
+
+                  <div class={`flex items-end gap-3 z-10 pl-16 sm:pl-20 transition-transform ${heroAttackAnim ? 'hero-attacking-anim' : ''}`}>
+                    <div class="flex flex-col items-center">
+                      <img src={heroClassData.image} alt={heroClassData.name} 
+                        class="h-44 sm:h-56 object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.8)] hero-sprite-idle" />
+                      <div class="entity-shadow -mt-4"></div>
+                    </div>
+
+                    {activePetData && (
+                      <div class="flex flex-col items-center pet-floating -mb-2">
+                        <img src={activePetData.image} alt={activePetData.name} class="w-16 h-16 object-contain filter drop-shadow-lg" />
+                        <div class="w-12 h-2.5 bg-black/60 rounded-full blur-[1px]"></div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div class={`flex flex-col items-center z-10 pr-6 sm:pr-12 transition-transform ${
+                    monsterHitAnim ? 'boss-damaged-anim' : 'monster-sprite-idle'
+                  }`}>
+                    <img src={currentBattle.monster.image} alt={currentBattle.monster.name} 
+                      class={`h-44 sm:h-60 object-contain filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.9)] ${
+                        currentBattle.isEnraged ? 'filter drop-shadow-[0_0_35px_#ef4444] scale-110' : ''
+                      }`} />
+                    <div class="entity-shadow -mt-4"></div>
+
+                    {currentBattle.isEnraged && (
+                      <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-600 text-white font-black animate-pulse mt-1">
+                        ⚠️ NỔI GIẬN CUỒNG BẠO!
+                      </span>
+                    )}
+                  </div>
+
+                </div>
+
+                {showBattleBag && (
+                  <div class="p-4 rounded-3xl bg-black/90 border-2 border-amber-400 shadow-2xl flex items-center justify-between gap-4 animate-fade-in">
+                    <span class="text-xs font-bold text-amber-300">Túi Dược Phẩm Trong Trận:</span>
+                    <div class="flex items-center gap-3">
+                      {hero.inventory.filter(i => i.type === 'potion').map(pot => (
+                        <button key={pot.id} onClick={() => usePotion(pot)}
+                          class="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center gap-2 text-xs font-bold">
+                          <img src={pot.image} class="w-5 h-5 object-contain" />
+                          <span>{pot.name} (x{pot.count})</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowBattleBag(false)} class="text-xs text-gray-400 hover:text-white">Đóng ✕</button>
+                  </div>
+                )}
+
+                {(() => {
+                  const currentQ = currentBattle.questions[currentBattle.currentQIndex];
+                  if (!currentQ) return null;
+
+                  return (
+                    <div class="fantasy-parchment-box p-5 sm:p-7 space-y-4 shadow-2xl relative">
+                      <div class="corner-filigree-tl"></div>
+                      <div class="corner-filigree-tr"></div>
+                      <div class="corner-filigree-bl"></div>
+                      <div class="corner-filigree-br"></div>
+
+                      <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+                        <div class="flex items-center gap-2">
+                          <span class="px-3 py-1 rounded-xl bg-purple-700/80 font-black text-xs text-amber-200 border border-purple-400/50">
+                            Câu hỏi {currentBattle.currentQIndex + 1}/{currentBattle.questions.length}
+                          </span>
+                          <span class="text-xs text-amber-100 font-bold">{currentQ.chapter}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-amber-300 font-black">⚔️ Sát thương: +{currentQ.damage}</span>
+                          <button onClick={() => alert(`💡 GỢI Ý GIẢI BÀI:\n\n${currentQ.hint}`)}
+                            class="px-3.5 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 font-bold text-xs border border-yellow-500/40 flex items-center gap-1 transition">
+                            <span>💡</span> Gợi Ý
+                          </button>
+                        </div>
+                      </div>
+
+                      <h3 class="text-lg sm:text-2xl font-extrabold text-white text-center py-2 leading-relaxed">
+                        <MathText text={currentQ.question} />
+                      </h3>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                        {currentQ.options.map((opt, oIdx) => {
+                          const isSelected = currentBattle.selectedAnswer === opt;
+                          const isCorrectAns = opt === currentQ.correctAnswer;
+                          const btnStyles = ['fantasy-btn-a', 'fantasy-btn-b', 'fantasy-btn-c', 'fantasy-btn-d'];
+                          const btnLetters = ['A', 'B', 'C', 'D'];
+
+                          return (
+                            <button key={opt} disabled={currentBattle.isAnswered} onClick={() => handleAnswer(opt)}
+                              class={`p-4 rounded-2xl font-bold text-sm sm:text-base text-left flex items-center justify-between text-white ${btnStyles[oIdx]} ${
+                                currentBattle.isAnswered && isCorrectAns ? 'ring-4 ring-yellow-300 brightness-110' : ''
+                              } ${
+                                currentBattle.isAnswered && isSelected && !isCorrectAns ? 'opacity-50 ring-2 ring-red-400' : ''
+                              }`}>
+                              
+                              <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-full bg-black/40 border border-white/40 flex items-center justify-center font-black text-amber-300 text-xs font-mono">
+                                  {btnLetters[oIdx]}
+                                </span>
+                                <span><MathText text={opt} /></span>
+                              </div>
+
+                              {currentBattle.isAnswered && isCorrectAns && <span class="text-yellow-300 font-black text-sm">✓ ĐÚNG</span>}
+                              {currentBattle.isAnswered && isSelected && !isCorrectAns && <span class="text-white font-black text-sm">✗ SAI</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {currentBattle.showExplanation && (
+                        <div class="p-4 rounded-2xl bg-blue-950/80 border-2 border-blue-400 text-xs text-blue-200 space-y-2 animate-fade-in">
+                          <span class="font-extrabold uppercase text-blue-300 block">💡 Giải thích kiến thức:</span>
+                          <p class="leading-relaxed"><MathText text={currentQ.explanation} /></p>
+                          <div class="pt-1 text-right">
+                            <button onClick={advanceToNextQuestion} class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md">
+                              Tiếp Tục Câu Sau ➡️
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div class="pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-300 gap-2">
+                        <span class="text-amber-300 font-bold">
+                          Phần thưởng trận: +{activeStage.monster.goldReward} Vàng, +{activeStage.monster.expReward} EXP
+                        </span>
+                        
+                        {currentBattle.combo > 1 && (
+                          <span class="px-3 py-1 rounded-full bg-red-600 text-white font-black text-xs animate-bounce shadow">
+                            🔥 COMBO {currentBattle.combo}x! (+{currentBattle.combo * 10}% Sát thương)
+                          </span>
+                        )}
+                      </div>
+
+                    </div>
+                  );
+                })()}
+
+              </div>
+            )}
+
+            {/* SCREEN 6: VICTORY (MODE 1) */}
+            {screen === 'victory' && battleVictoryData && (
+              <div class="w-full max-w-xl fantasy-parchment-box p-6 sm:p-8 text-center space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="space-y-1 text-center">
+                  <span class="text-xs uppercase font-black text-amber-400 tracking-widest">CHIẾN THẮNG VẺ VANG!</span>
+                  <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">🎉 CHIẾN CÔNG HOÀN HẢO 🎉</h2>
+                  <p class="text-xs text-gray-300">Bạn đã dũng cảm vượt qua {battleVictoryData.stageName}</p>
+                </div>
+
+                <div onClick={handleOpenMysteryChest}
+                  class={`p-6 rounded-3xl border-2 border-amber-400/60 cursor-pointer shadow-2xl transition transform hover:scale-105 text-center ${
+                    openedChest ? 'bg-amber-950/30' : 'bg-gradient-to-b from-amber-600/30 to-black chest-wiggle'
+                  }`}>
+                  
+                  <div class="h-28 flex items-center justify-center">
+                    <img src={openedChest ? "/assets/items/chest_open.png" : "/assets/items/chest_closed.png"} 
+                      alt="Treasure Chest" class="h-full object-contain filter drop-shadow-2xl" />
+                  </div>
+
+                  <span class="text-sm font-black text-amber-300 block uppercase mt-2">
+                    {openedChest ? '🎁 ĐÃ MỞ RƯƠNG THÀNH CÔNG!' : 'CHẠM VÀO ĐỂ MỞ RƯƠNG BÁU HOÀNG GIA!'}
+                  </span>
+
+                  {chestRewardItem && (
+                    <div class="mt-2 p-3 rounded-2xl bg-black/60 border border-amber-400/50 flex items-center justify-center gap-3 animate-fade-in">
+                      <img src={chestRewardItem.image} class="w-8 h-8 object-contain" />
+                      <div class="text-left">
+                        <span class="text-xs font-bold text-white block">Nhận được: {chestRewardItem.name}</span>
+                        <span class="text-[10px] text-amber-300 block">{chestRewardItem.desc}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-black/60 border border-amber-500/30 text-center">
+                  <div class="space-y-0.5">
+                    <span class="text-xs text-gray-400 block">Kinh nghiệm</span>
+                    <span class="text-base sm:text-lg font-black text-emerald-400 font-mono">+{battleVictoryData.expEarned} EXP</span>
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-xs text-gray-400 block">Tiền vàng</span>
+                    <span class="text-base sm:text-lg font-black text-amber-400 font-mono">+{battleVictoryData.goldEarned} 🪙</span>
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-xs text-gray-400 block">Độ chính xác</span>
+                    <span class="text-base sm:text-lg font-black text-cyan-400 font-mono">{battleVictoryData.accuracy}%</span>
+                  </div>
+                </div>
+
+                {battleVictoryData.didLevelUp && (
+                  <div class="p-3 rounded-2xl bg-gradient-to-r from-purple-600/40 to-pink-600/40 border border-purple-400 text-sm font-black text-yellow-300 animate-bounce text-center">
+                    ⭐ CHÚC MỪNG ANH HÙNG ĐÃ ĐẠT CẤP ĐỘ {battleVictoryData.newLevel}! ⭐
+                  </div>
+                )}
+
+                <div class="pt-2 flex items-center justify-center gap-3">
+                  <button onClick={() => {
+                    window.rpgSound.playClick();
+                    setScreen('world_map');
+                  }} class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 text-white font-black text-base shadow-xl shadow-rose-500/30 font-fantasy">
+                    TIẾP TỤC KHÁM PHÁ BẢN ĐỒ 🗺️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 7: PROFILE */}
+            {screen === 'profile' && (
+              <div class="w-full max-w-2xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-full border-2 border-amber-400 bg-gradient-to-tr from-amber-600/30 to-black p-1 shadow-lg overflow-hidden">
+                      <img src={heroClassData.avatar} alt="Hero" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <h2 class="text-xl sm:text-2xl font-black text-white">{hero.name}</h2>
+                      <span class="text-xs text-amber-300 font-bold">{heroClassData.name} • Lv.{hero.level}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div class="p-3 rounded-2xl bg-black/50 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Sức Mạnh (ATK)</span>
+                    <span class="text-xl font-black text-red-400 font-mono">{calculatedStats.atk}</span>
+                  </div>
+                  <div class="p-3 rounded-2xl bg-black/50 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Phòng Thủ (DEF)</span>
+                    <span class="text-xl font-black text-blue-400 font-mono">{calculatedStats.def}</span>
+                  </div>
+                  <div class="p-3 rounded-2xl bg-black/50 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Máu Tối Đa (HP)</span>
+                    <span class="text-xl font-black text-emerald-400 font-mono">{calculatedStats.maxHp}</span>
+                  </div>
+                  <div class="p-3 rounded-2xl bg-black/50 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Tốc Độ (SPD)</span>
+                    <span class="text-xl font-black text-yellow-400 font-mono">{calculatedStats.spd}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-xs font-bold text-amber-300 uppercase mb-2">Trang Bị Trên Người:</h4>
+                  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {[
+                      { slot: 'weapon', label: 'Vũ Khí' },
+                      { slot: 'shield', label: 'Khiên' },
+                      { slot: 'helmet', label: 'Mũ/Vương Miện' },
+                      { slot: 'boots', label: 'Giày Gió' },
+                      { slot: 'accessory', label: 'Bảo Vật' }
+                    ].map(s => {
+                      const item = hero.equipped[s.slot];
+                      return (
+                        <div key={s.slot} class="p-3 rounded-2xl border border-white/10 bg-black/60 text-center space-y-1">
+                          <span class="text-[9px] text-gray-400 uppercase font-bold block">{s.label}</span>
+                          {item ? (
+                            <div>
+                              <img src={item.image} class="w-10 h-10 object-contain mx-auto filter drop-shadow" />
+                              <span class="text-[11px] font-bold text-amber-300 block truncate mt-1">{item.name}</span>
+                              <button onClick={() => unequipItem(s.slot)} class="text-[9px] text-red-400 hover:underline">Tháo</button>
+                            </div>
+                          ) : (
+                            <span class="text-xs text-gray-600 italic block py-4">Trống</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 8: TÚI ĐỒ */}
+            {screen === 'inventory' && (
+              <div class="w-full max-w-2xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                    <img src="/assets/items/quest_scroll.png" class="w-6 h-6 object-contain" />
+                    Túi Đồ Của Anh Hùng
+                  </h2>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                {hero.inventory.length === 0 ? (
+                  <div class="text-center py-12 text-gray-400 text-sm">Túi đồ của bạn đang trống. Hãy vào Cửa Hàng để sắm thêm vật phẩm!</div>
+                ) : (
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                    {hero.inventory.map(item => (
+                      <div key={item.id} class="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                          <img src={item.image} class="w-10 h-10 object-contain filter drop-shadow" />
+                          <div>
+                            <h4 class="font-bold text-xs text-white">{item.name} {item.count > 1 && `(x${item.count})`}</h4>
+                            <p class="text-[10px] text-gray-400 leading-tight">{item.desc}</p>
+                          </div>
+                        </div>
+
+                        {item.slot ? (
+                          <button onClick={() => equipItem(item)} class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold shrink-0">
+                            Trang bị
+                          </button>
+                        ) : item.effect ? (
+                          <button onClick={() => usePotion(item)} class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold shrink-0">
+                            Dùng
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SCREEN 9: CỬA HÀNG & THÚ CƯNG */}
+            {screen === 'shop' && (
+              <div class="w-full max-w-3xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                      <img src="/assets/items/gold_coins.png" class="w-6 h-6 object-contain" />
+                      Cửa Hàng Học Viện & Đảo Thú Cưng
+                    </h2>
+                    <p class="text-xs text-gray-400">Dùng số vàng tích lũy từ học tập để mua trang bị và linh vật đồng hành</p>
+                  </div>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-amber-300 uppercase tracking-widest">🐾 Linh Thú Đồng Hành:</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {window.RPG_DATA.pets.map(p => {
+                      const isUnlocked = hero.unlockedPets.includes(p.id);
+                      const isActive = hero.activePetId === p.id;
+                      return (
+                        <div key={p.id} class={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
+                          isActive ? 'border-amber-400 bg-amber-500/20' : 'border-white/10 bg-black/60'
+                        }`}>
+                          <div class="flex items-center gap-3">
+                            <img src={p.image} class="w-12 h-12 object-contain filter drop-shadow" />
+                            <div>
+                              <h5 class="font-bold text-xs text-white">{p.name}</h5>
+                              <p class="text-[10px] text-amber-300 font-semibold">{p.buffDesc}</p>
+                            </div>
+                          </div>
+                          {isActive ? (
+                            <span class="text-[10px] px-2 py-1 rounded bg-amber-400 text-black font-black uppercase shrink-0">Đang theo</span>
+                          ) : isUnlocked ? (
+                            <button onClick={() => setHero({ ...hero, activePetId: p.id })} class="px-3 py-1.5 rounded-xl bg-white/10 text-xs font-bold shrink-0">
+                              Chọn
+                            </button>
+                          ) : (
+                            <button onClick={() => adoptPet(p)} class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black shrink-0">
+                              {p.price} 🪙
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div class="space-y-3 pt-2 border-t border-amber-500/20">
+                  <h4 class="text-xs font-bold text-amber-300 uppercase tracking-widest">⚔️ Trang Bị & Dược Phẩm:</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1">
+                    {window.RPG_DATA.shopItems.map(item => (
+                      <div key={item.id} class="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                          <img src={item.image} class="w-10 h-10 object-contain filter drop-shadow" />
+                          <div>
+                            <h5 class="font-bold text-xs text-white">{item.name}</h5>
+                            <span class="text-[10px] text-gray-400 block line-clamp-1">{item.desc}</span>
+                          </div>
+                        </div>
+                        <button onClick={() => buyItem(item)} class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0">
+                          {item.price} 🪙
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 10: NHIỆM VỤ */}
+            {screen === 'quests' && (
+              <div class="w-full max-w-2xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                    <img src="/assets/items/medal.png" class="w-6 h-6 object-contain" />
+                    Nhiệm Vụ Hằng Ngày & Thành Tựu
+                  </h2>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-amber-300 uppercase tracking-widest">Nhiệm Vụ Hôm Nay:</h4>
+                  <div class="space-y-2">
+                    {hero.dailyQuests.map(q => {
+                      const isComplete = hero.studyStats.totalCorrect >= q.target;
+                      return (
+                        <div key={q.id} class="p-3.5 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-3">
+                          <div>
+                            <h5 class="font-bold text-xs text-white">{q.title}</h5>
+                            <p class="text-[11px] text-gray-400">{q.desc}</p>
+                            <span class="text-[10px] text-amber-300 font-bold block mt-1">
+                              Thưởng: +{q.reward.gold} 🪙 {q.reward.gems ? `+${q.reward.gems} 💎` : ''}
+                            </span>
+                          </div>
+
+                          {q.isClaimed ? (
+                            <span class="text-xs text-gray-500 font-bold">Đã nhận ✓</span>
+                          ) : isComplete ? (
+                            <button onClick={() => claimDailyQuest(q.id)} class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs shrink-0 animate-bounce">
+                              Nhận Quà 🎁
+                            </button>
+                          ) : (
+                            <span class="text-xs text-gray-400 font-mono">0/{q.target}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div class="space-y-3 pt-2 border-t border-amber-500/20">
+                  <h4 class="text-xs font-bold text-amber-300 uppercase tracking-widest">Huy Hiệu Thành Tựu:</h4>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {hero.achievements.map(ach => (
+                      <div key={ach.id} class="p-2.5 rounded-xl bg-black/60 border border-white/10 flex items-center gap-2.5 text-left">
+                        <img src={ach.icon} class="w-8 h-8 object-contain shrink-0" />
+                        <div>
+                          <span class="font-bold text-[11px] text-white block truncate">{ach.title}</span>
+                          <span class="text-[9px] text-gray-400 block line-clamp-1">{ach.desc}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SCREEN 11: DASHBOARD HỌC TẬP */}
+            {screen === 'dashboard' && (
+              <div class="w-full max-w-2xl fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                      <img src="/assets/items/spellbook.png" class="w-6 h-6 object-contain" />
+                      Thống Kê Học Tập & Tiến Bộ
+                    </h2>
+                    <p class="text-xs text-gray-400">Theo dõi sự phát triển kiến thức trong suốt cuộc phiêu lưu</p>
+                  </div>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div class="p-3.5 rounded-2xl bg-black/60 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Số Câu Đã Làm</span>
+                    <span class="text-2xl font-black text-white font-mono">{hero.studyStats.totalAnswered}</span>
+                  </div>
+                  <div class="p-3.5 rounded-2xl bg-black/60 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Trả Lời Đúng</span>
+                    <span class="text-2xl font-black text-emerald-400 font-mono">{hero.studyStats.totalCorrect}</span>
+                  </div>
+                  <div class="p-3.5 rounded-2xl bg-black/60 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Độ Chính Xác</span>
+                    <span class="text-2xl font-black text-cyan-400 font-mono">
+                      {hero.studyStats.totalAnswered > 0 ? Math.round((hero.studyStats.totalCorrect / hero.studyStats.totalAnswered) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div class="p-3.5 rounded-2xl bg-black/60 border border-white/10 text-center">
+                    <span class="text-xs text-gray-400 block">Trùm Đã Hạ</span>
+                    <span class="text-2xl font-black text-amber-400 font-mono">{hero.studyStats.bossesDefeated} 👑</span>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-amber-300 uppercase tracking-widest">Tiến Độ Theo Môn Học:</h4>
+                  {[
+                    { key: 'math', name: 'Toán Học', icon: '/assets/items/spellbook.png', color: 'bg-emerald-500' },
+                    { key: 'english', name: 'Tiếng Anh', icon: '/assets/items/quest_scroll.png', color: 'bg-blue-500' },
+                    { key: 'science', name: 'Khoa Học', icon: '/assets/items/mana_crystal.png', color: 'bg-purple-500' }
+                  ].map(s => {
+                    const corr = hero.studyStats.subjectCorrectCounts[s.key] || 0;
+                    const tot = hero.studyStats.subjectTotalCounts[s.key] || 0;
+                    const pct = tot > 0 ? Math.round((corr / tot) * 100) : 0;
+                    return (
+                      <div key={s.key} class="space-y-1">
+                        <div class="flex items-center justify-between text-xs font-bold">
+                          <span class="text-white flex items-center gap-2">
+                            <img src={s.icon} class="w-4 h-4 object-contain" /> {s.name}
+                          </span>
+                          <span class="text-gray-300 font-mono">{corr}/{tot} câu đúng ({pct}%)</span>
+                        </div>
+                        <div class="w-full bg-black/60 h-2.5 rounded-full overflow-hidden border border-white/10">
+                          <div class={`${s.color} h-full transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {hero.studyStats.weakQuestions.length > 0 && (
+                  <div class="p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 space-y-1.5 text-xs text-rose-200">
+                    <span class="font-extrabold uppercase text-rose-300 block">⚠️ Các câu bạn từng trả lời sai:</span>
+                    <ul class="list-disc pl-4 space-y-1">
+                      {hero.studyStats.weakQuestions.slice(-3).map((wq, idx) => (
+                        <li key={idx}><MathText text={wq} /></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SCREEN 12: CÀI ĐẶT */}
+            {screen === 'settings' && (
+              <div class="w-full max-w-lg fantasy-parchment-box p-6 sm:p-8 space-y-6 animate-fade-in relative text-left">
+                <div class="corner-filigree-tl"></div>
+                <div class="corner-filigree-tr"></div>
+                <div class="corner-filigree-bl"></div>
+                <div class="corner-filigree-br"></div>
+
+                <div class="flex items-center justify-between border-b border-amber-500/30 pb-4">
+                  <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                    <span>⚙️</span> Cài Đặt Trò Chơi
+                  </h2>
+                  <button onClick={() => setScreen('world_map')} class="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20">Đóng ✕</button>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between p-3.5 rounded-2xl bg-black/60 border border-white/10">
+                    <div>
+                      <h4 class="font-bold text-xs text-white">Nhạc Nền Fantasy (BGM)</h4>
+                      <p class="text-[10px] text-gray-400">Giai điệu thị trấn & chiến đấu</p>
+                    </div>
+                    <button onClick={() => {
+                      const state = window.rpgSound.toggleMusic();
+                      setIsMusicOn(state);
+                    }} class={`px-4 py-1.5 rounded-xl font-black text-xs ${isMusicOn ? 'bg-emerald-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                      {isMusicOn ? 'BẬT' : 'TẮT'}
+                    </button>
+                  </div>
+
+                  <div class="flex items-center justify-between p-3.5 rounded-2xl bg-black/60 border border-white/10">
+                    <div>
+                      <h4 class="font-bold text-xs text-white">Hiệu Ứng Âm Thanh (SFX)</h4>
+                      <p class="text-[10px] text-gray-400">Âm thanh chém kiếm, phép thuật, mở rương</p>
+                    </div>
+                    <button onClick={() => {
+                      const state = window.rpgSound.toggleSfx();
+                      setIsSfxOn(state);
+                    }} class={`px-4 py-1.5 rounded-xl font-black text-xs ${isSfxOn ? 'bg-emerald-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                      {isSfxOn ? 'BẬT' : 'TẮT'}
+                    </button>
+                  </div>
+
+                  <div class="pt-4 border-t border-white/10">
+                    <button onClick={() => {
+                      if (confirm("Bạn có chắc chắn muốn xóa dữ liệu và chơi lại từ đầu?")) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        localStorage.removeItem(JOURNEY_SESSION_KEY);
+                        window.location.reload();
+                      }
+                    }} class="w-full py-3 rounded-2xl bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 font-bold text-xs">
+                      🔄 Khởi Tạo Lại Toàn Bộ Dữ Liệu Game
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* ======================================================== */}
+          {/* BOTTOM NAVIGATION                                        */}
+          {/* ======================================================== */}
+          {screen !== 'battle' && screen !== 'journey_battle' && (
+            <nav class="w-full bg-black/90 border-t border-amber-500/40 px-3 py-2 sticky bottom-0 z-40 backdrop-blur-md">
+              <div class="max-w-3xl mx-auto flex items-center justify-around gap-1">
+                {[
+                  { id: 'landing', icon: '🏰', label: 'Trang Chủ' },
+                  { id: 'world_map', iconImg: '/assets/items/quest_scroll.png', label: 'Bản Đồ 10 Ải' },
+                  { id: 'journey_select_set', iconImg: '/assets/items/sword.png', label: '30 Câu RPG' },
+                  { id: 'profile', iconImg: heroClassData.avatar, label: 'Anh Hùng' },
+                  { id: 'inventory', iconImg: '/assets/items/chest_closed.png', label: 'Túi Đồ' },
+                  { id: 'shop', iconImg: '/assets/items/gold_coins.png', label: 'Cửa Hàng' },
+                  { id: 'dashboard', iconImg: '/assets/items/spellbook.png', label: 'Học Tập' },
+                  { id: 'settings', icon: '⚙️', label: 'Cài Đặt' }
+                ].map(nav => {
+                  const isActive = screen === nav.id;
+                  return (
+                    <button key={nav.id} onClick={() => {
+                      window.rpgSound.playClick();
+                      if (nav.id === 'journey_select_set') {
+                        loadPublishedQuestionSets();
+                      }
+                      setScreen(nav.id);
+                    }} class={`flex flex-col items-center py-1 px-2.5 rounded-2xl transition transform active:scale-95 ${
+                      isActive ? 'bg-amber-500/20 text-amber-300 font-black' : 'text-gray-400 hover:text-white'
+                    }`}>
+                      {nav.iconImg ? (
+                        <img src={nav.iconImg} class="w-5 h-5 object-contain" />
+                      ) : (
+                        <span class="text-lg">{nav.icon}</span>
+                      )}
+                      <span class="text-[9px] mt-0.5 tracking-tight font-bold">{nav.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
+'''
+
+with open('public/rpg.html', 'w', encoding='utf-8') as f:
+    f.write(rpg_html_content.strip())
+
+print('Successfully generated public/rpg.html. Size:', len(rpg_html_content), 'chars')

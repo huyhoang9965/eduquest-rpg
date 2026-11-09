@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduQuest Creator Studio – Quản Lý & Biên Soạn Bộ 30 Câu Hỏi</title>
+
+  <!-- React 18 & Tailwind CSS -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- KaTeX for beautiful math formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+    .font-fantasy { font-family: 'Cinzel', serif; }
+  </style>
+</head>
+<body class="bg-grid-pattern min-h-screen text-white select-none">
+  <div id="root"></div>
+
+  <script src="/js/eduquest-auth.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // Helper render KaTeX an toàn
+    function MathText({ text }) {
+      const containerRef = useRef(null);
+      useEffect(() => {
+        if (containerRef.current && window.renderMathInElement) {
+          try {
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) { }
+        }
+      }, [text]);
+
+      return <span ref={containerRef} dangerouslySetInnerHTML={{ __html: text || '' }}></span>;
+    }
+
+    function CreatorApp() {
+      // 'list' (dashboard) | 'editor' (biên soạn 30 câu)
+      const [view, setView] = useState('list');
+      const [questionSets, setQuestionSets] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      // Auth user state
+      const [authUser, setAuthUser] = useState(() => window.EduQuestAuth ? window.EduQuestAuth.getUser() : null);
+      const [quickLoginLoading, setQuickLoginLoading] = useState(false);
+
+      useEffect(() => {
+        if (window.EduQuestAuth) {
+          window.EduQuestAuth.onAuthChange((u) => setAuthUser(u));
+        }
+      }, []);
+
+      const isTeacherOrAdmin = authUser && (authUser.role === 'teacher' || authUser.role === 'admin');
+      const isStudent = authUser && authUser.role === 'student';
+
+      const handleQuickTeacherLogin = async () => {
+        setQuickLoginLoading(true);
+        try {
+          const res = await window.EduQuestAuth.login('teacher@eduquest.edu.vn', 'Teacher@123456');
+          if (res.success) {
+            setAuthUser(res.user);
+          } else {
+            alert(res.error || 'Đăng nhập thất bại!');
+          }
+        } catch (e) {
+          alert('Lỗi đăng nhập: ' + e.message);
+        } finally {
+          setQuickLoginLoading(false);
+        }
+      };
+
+      // Filter state
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterSubject, setFilterSubject] = useState('all');
+      const [filterGrade, setFilterGrade] = useState('all');
+      const [filterStatus, setFilterStatus] = useState('all');
+
+      // Modals
+      const [showCreateModal, setShowCreateModal] = useState(false);
+      const [showImportModal, setShowImportModal] = useState(false);
+      const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+      // Active editing set
+      const [currentSet, setCurrentSet] = useState(null);
+      const [saveStatus, setSaveStatus] = useState('');
+
+      // New set form data
+      const [newSetData, setNewSetData] = useState({
+        title: '',
+        subject: 'math',
+        grade: 6,
+        topic: '',
+        description: '',
+        difficulty: 'medium'
+      });
+
+      // Import form data
+      const [importData, setImportData] = useState({
+        title: '',
+        subject: 'math',
+        grade: 6,
+        topic: '',
+        rawText: '',
+        format: 'text'
+      });
+
+      // Load danh sách từ server
+      const fetchSets = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch('/api/custom-question-sets');
+          const data = await res.json();
+          if (data.success) {
+            setQuestionSets(data.data || []);
+          }
+        } catch (err) {
+          console.error("Lỗi nạp bộ câu hỏi:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchSets();
+      }, []);
+
+      // Mở trình biên soạn cho 1 bộ
+      const openEditor = async (setId) => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/custom-question-sets/${setId}`);
+          const data = await res.json();
+          if (data.success) {
+            setCurrentSet(data.data);
+            setView('editor');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        } catch (e) {
+          alert("Lỗi tải chi tiết bộ câu hỏi: " + e.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Tạo mới bộ câu hỏi
+      const handleCreateSet = async (e) => {
+        e.preventDefault();
+        if (isStudent) {
+          alert("⚠️ Bạn đang đăng nhập bằng tài khoản Học Sinh. Chỉ Giáo Viên hoặc Quản Trị Viên mới có quyền tạo bộ đề!");
+          return;
+        }
+        if (!newSetData.title.trim()) {
+          alert("Vui lòng nhập tên bộ câu hỏi!");
+          return;
+        }
+
+        try {
+          const fetcher = window.EduQuestAuth ? window.EduQuestAuth.fetchWithAuth.bind(window.EduQuestAuth) : fetch;
+          const res = await fetcher('/api/custom-question-sets', {
+            method: 'POST',
+            body: JSON.stringify(newSetData)
+          });
+          const data = await res.json();
+          if (data.success) {
+            setShowCreateModal(false);
+            await fetchSets();
+            // Mở thẳng editor
+            openEditor(data.data.id);
+          } else {
+            alert(data.error || "Lỗi tạo bộ câu hỏi");
+          }
+        } catch (err) {
+          alert("Lỗi kết nối server: " + err.message);
+        }
+      };
+
+      // Lưu cập nhật bộ câu hỏi (Lưu Nháp hoặc Xuất Bản)
+      const handleSaveSet = async (targetStatus) => {
+        if (!currentSet) return;
+        if (isStudent) {
+          alert("⚠️ Bạn đang đăng nhập bằng tài khoản Học Sinh. Chỉ Giáo Viên hoặc Quản Trị Viên mới có quyền lưu hoặc xuất bản bộ đề!");
+          return;
+        }
+        setSaveStatus('Đang lưu...');
+
+        const payload = {
+          ...currentSet,
+          status: targetStatus || currentSet.status
+        };
+
+        try {
+          const fetcher = window.EduQuestAuth ? window.EduQuestAuth.fetchWithAuth.bind(window.EduQuestAuth) : fetch;
+          const res = await fetcher(`/api/custom-question-sets/${currentSet.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.success) {
+            setCurrentSet(data.data);
+            setSaveStatus(targetStatus === 'published' ? 'Đã xuất bản thành công! 🚀' : 'Đã lưu bản nháp! 💾');
+            setTimeout(() => setSaveStatus(''), 3500);
+            fetchSets();
+          } else {
+            setSaveStatus('');
+            alert(data.error || "Không thể lưu bộ câu hỏi!");
+          }
+        } catch (err) {
+          setSaveStatus('');
+          alert("Lỗi kết nối: " + err.message);
+        }
+      };
+
+      // Xóa bộ câu hỏi
+      const handleDeleteSet = async (setId, title) => {
+        if (isStudent) {
+          alert("⚠️ Bạn đang đăng nhập bằng tài khoản Học Sinh. Chỉ Giáo Viên hoặc Quản Trị Viên mới có quyền xóa bộ đề!");
+          return;
+        }
+        if (!confirm(`Bạn có chắc chắn muốn xóa bộ câu hỏi:\n"${title}"?\nHành động này không thể hoàn tác.`)) {
+          return;
+        }
+
+        try {
+          const fetcher = window.EduQuestAuth ? window.EduQuestAuth.fetchWithAuth.bind(window.EduQuestAuth) : fetch;
+          const res = await fetcher(`/api/custom-question-sets/${setId}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            await fetchSets();
+            if (currentSet && currentSet.id === setId) {
+              setView('list');
+              setCurrentSet(null);
+            }
+          } else {
+            alert(data.error || "Lỗi xóa bộ câu hỏi");
+          }
+        } catch (err) {
+          alert("Lỗi xóa: " + err.message);
+        }
+      };
+
+      // Nhân bản bộ
+            // Chuyển nhanh Xuất Bản / Bản Nháp
+      const handleTogglePublish = async (setId) => {
+        try {
+          const fetcher = window.EduQuestAuth ? window.EduQuestAuth.fetchWithAuth.bind(window.EduQuestAuth) : fetch;
+          const res = await fetcher(`/api/custom-question-sets/${setId}/toggle-publish`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            fetchSets();
+          } else {
+            alert(data.error || "Không thể chuyển trạng thái!");
+          }
+        } catch (e) {
+          alert("Lỗi: " + e.message);
+        }
+      };
+
+      const handleDuplicateSet = async (setId) => {
+        if (isStudent) {
+          alert("⚠️ Bạn đang đăng nhập bằng tài khoản Học Sinh. Chỉ Giáo Viên hoặc Quản Trị Viên mới có quyền nhân bản bộ đề!");
+          return;
+        }
+        try {
+          const fetcher = window.EduQuestAuth ? window.EduQuestAuth.fetchWithAuth.bind(window.EduQuestAuth) : fetch;
+          const res = await fetcher(`/api/custom-question-sets/${setId}/duplicate`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            await fetchSets();
+            alert("Đã nhân bản thành công bộ câu hỏi!");
+          } else {
+            alert(data.error || "Lỗi nhân bản");
+          }
+        } catch (e) {
+          alert("Lỗi nhân bản: " + e.message);
+        }
+      };
+
+      // Thêm câu hỏi mới vào bộ đang sửa
+      const handleAddQuestion = () => {
+        if (!currentSet) return;
+        const currentCount = (currentSet.questions || []).length;
+        if (currentCount >= 30) {
+          alert("Bộ câu hỏi này đã có đủ 30 câu!");
+          return;
+        }
+
+        const newQ = {
+          id: `q-${Date.now()}-${currentCount + 1}`,
+          question: `Câu hỏi số ${currentCount + 1}: `,
+          image: '',
+          options: ['Đáp án A', 'Đáp án B', 'Đáp án C', 'Đáp án D'],
+          correctAnswer: 'Đáp án A',
+          explanation: 'Lời giải chi tiết cho câu hỏi...',
+          difficulty: 'medium',
+          damage: 30
+        };
+
+        setCurrentSet({
+          ...currentSet,
+          questions: [...currentSet.questions, newQ]
+        });
+      };
+
+      // Thêm nhanh các câu hỏi trống cho đủ 30 câu
+      const handleFillUpTo30 = () => {
+        if (!currentSet) return;
+        const currentCount = (currentSet.questions || []).length;
+        if (currentCount >= 30) {
+          alert("Đã có đủ 30 câu!");
+          return;
+        }
+
+        const missing = 30 - currentCount;
+        if (!confirm(`Tạo nhanh ${missing} ô câu hỏi mẫu để bạn chỉnh sửa cho đủ 30 câu?`)) return;
+
+        const additional = [];
+        for (let i = 0; i < missing; i++) {
+          const idx = currentCount + i + 1;
+          additional.push({
+            id: `q-${Date.now()}-${idx}`,
+            question: `Câu ${idx}: `,
+            options: ['Lựa chọn A', 'Lựa chọn B', 'Lựa chọn C', 'Lựa chọn D'],
+            correctAnswer: 'Lựa chọn A',
+            explanation: '',
+            difficulty: 'medium',
+            damage: 30
+          });
+        }
+
+        setCurrentSet({
+          ...currentSet,
+          questions: [...currentSet.questions, ...additional]
+        });
+      };
+
+      // Cập nhật 1 câu hỏi cụ thể
+      const updateQuestion = (index, field, value) => {
+        const nextQuestions = [...currentSet.questions];
+        nextQuestions[index] = { ...nextQuestions[index], [field]: value };
+        setCurrentSet({ ...currentSet, questions: nextQuestions });
+      };
+
+      // Cập nhật option của câu hỏi
+      const updateOption = (qIndex, optIndex, value) => {
+        const nextQuestions = [...currentSet.questions];
+        const oldOptVal = nextQuestions[qIndex].options[optIndex];
+        const nextOpts = [...nextQuestions[qIndex].options];
+        nextOpts[optIndex] = value;
+        nextQuestions[qIndex].options = nextOpts;
+
+        // Nếu option này đang là đáp án đúng -> cập nhật luôn giá trị đúng
+        if (nextQuestions[qIndex].correctAnswer === oldOptVal) {
+          nextQuestions[qIndex].correctAnswer = value;
+        }
+
+        setCurrentSet({ ...currentSet, questions: nextQuestions });
+      };
+
+      // Xóa 1 câu hỏi
+      const deleteQuestion = (index) => {
+        if (!confirm(`Xóa câu hỏi số ${index + 1}?`)) return;
+        const nextQuestions = currentSet.questions.filter((_, i) => i !== index);
+        setCurrentSet({ ...currentSet, questions: nextQuestions });
+      };
+
+      // Di chuyển thứ tự câu hỏi (Up / Down)
+      const moveQuestion = (index, direction) => {
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= currentSet.questions.length) return;
+
+        const nextQuestions = [...currentSet.questions];
+        const temp = nextQuestions[index];
+        nextQuestions[index] = nextQuestions[targetIndex];
+        nextQuestions[targetIndex] = temp;
+        setCurrentSet({ ...currentSet, questions: nextQuestions });
+      };
+
+      // Nhân bản 1 câu hỏi
+      const duplicateQuestion = (index) => {
+        if (currentSet.questions.length >= 30) {
+          alert("Bộ câu hỏi đã đạt giới hạn 30 câu!");
+          return;
+        }
+        const cloned = JSON.parse(JSON.stringify(currentSet.questions[index]));
+        cloned.id = `q-${Date.now()}`;
+        cloned.question = `${cloned.question} (Bản sao)`;
+        const nextQuestions = [...currentSet.questions];
+        nextQuestions.splice(index + 1, 0, cloned);
+        setCurrentSet({ ...currentSet, questions: nextQuestions });
+      };
+
+      // Tải file mẫu 30 câu chuẩn JSON
+      const downloadSampleTemplate = () => {
+        const sampleQuestions = [];
+        for (let i = 1; i <= 30; i++) {
+          sampleQuestions.push({
+            id: `sample-q-${i}`,
+            question: `Câu hỏi mẫu số ${i}: Tính giá trị của biểu thức $${i} \\times 2 + 10 = ?$`,
+            options: [`${i * 2 + 10}`, `${i * 2 + 8}`, `${i * 2 + 12}`, `${i * 2 + 15}`],
+            correctAnswer: `${i * 2 + 10}`,
+            explanation: `Thực hiện phép nhân trước: $${i} \\times 2 = ${i * 2}$, sau đó cộng 10 được $${i * 2 + 10}$.`,
+            difficulty: i <= 10 ? 'easy' : i <= 20 ? 'medium' : 'hard',
+            damage: 30
+          });
+        }
+
+        const template = {
+          title: "Bộ Đề Mẫu 30 Câu Toán Học Lớp 6",
+          subject: "math",
+          grade: 6,
+          topic: "Phép tính số tự nhiên & phân số",
+          description: "Mẫu chuẩn 30 câu hỏi để biên soạn hoặc nhập nhanh vào EduQuest.",
+          difficulty: "medium",
+          questions: sampleQuestions
+        };
+
+        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "eduquest_mau_30_cau_chuan.json";
+        a.click();
+      };
+
+      // Xử lý Import dữ liệu
+      const handleImportSubmit = async (e) => {
+        e.preventDefault();
+        if (!importData.rawText.trim()) {
+          alert("Vui lòng dán nội dung câu hỏi!");
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/custom-question-sets/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: importData.title,
+              subject: importData.subject,
+              grade: importData.grade,
+              topic: importData.topic,
+              rawData: importData.rawText,
+              format: importData.format
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`Đã nhập thành công ${data.count} câu hỏi vào bộ mới!`);
+            setShowImportModal(false);
+            await fetchSets();
+            openEditor(data.data.id);
+          } else {
+            alert(data.error || "Lỗi nhập file");
+          }
+        } catch (e) {
+          alert("Lỗi kết nối: " + e.message);
+        }
+      };
+
+      // Lọc danh sách
+      const filteredSets = useMemo(() => {
+        return questionSets.filter(s => {
+          const matchQuery = !searchQuery || 
+            s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            (s.topic && s.topic.toLowerCase().includes(searchQuery.toLowerCase()));
+          const matchSub = filterSubject === 'all' || s.subject === filterSubject;
+          const matchGrade = filterGrade === 'all' || s.grade.toString() === filterGrade;
+          const matchStatus = filterStatus === 'all' || s.status === filterStatus;
+          return matchQuery && matchSub && matchGrade && matchStatus;
+        });
+      }, [questionSets, searchQuery, filterSubject, filterGrade, filterStatus]);
+
+      return (
+        <div class="min-h-screen flex flex-col justify-between">
+          
+          {/* HEADER CHÍNH CỦA CREATOR STUDIO */}
+          <header class="w-full bg-black/85 border-b border-amber-500/40 px-4 sm:px-8 py-4 backdrop-blur-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <a href="/index.html" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-purple-600 flex items-center justify-center font-black text-lg shadow-lg">
+                  EQ
+                </a>
+                <div>
+                  <h1 class="text-lg sm:text-xl font-black font-fantasy text-amber-300 flex items-center gap-2">
+                    <span>👑</span> EduQuest Creator Studio
+                  </h1>
+                  <p class="text-xs text-gray-300">Quản Lý & Tự Biên Soạn Bộ 30 Câu Hỏi Cho Chế Độ Hành Trình RPG</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                {view === 'editor' && (
+                  <button onClick={() => { setView('list'); fetchSets(); }} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold transition">
+                    ← Danh Sách Bộ Câu Hỏi
+                  </button>
+                )}
+                {authUser ? (
+                  <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-amber-500/40 text-xs">
+                    <span class={`px-2 py-0.5 rounded-md font-black text-[10px] ${authUser.role === 'admin' ? 'bg-red-500 text-white' : (authUser.role === 'teacher' ? 'bg-purple-600 text-white' : 'bg-emerald-600 text-white')}`}>
+                      {authUser.role === 'admin' ? 'QUẢN TRỊ' : (authUser.role === 'teacher' ? 'GIÁO VIÊN' : 'HỌC SINH')}
+                    </span>
+                    <span class="font-bold text-amber-200 hidden md:inline">{authUser.display_name}</span>
+                    <button onClick={() => window.EduQuestAuth.logout()} title="Đăng xuất" class="text-gray-400 hover:text-red-400 transition ml-1 text-sm">
+                      🚪
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={handleQuickTeacherLogin} disabled={quickLoginLoading} class="px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-200 font-bold text-xs transition flex items-center gap-1.5">
+                    <span>👩‍🏫</span> {quickLoginLoading ? 'Đang vào...' : 'Đăng Nhập Giáo Viên'}
+                  </button>
+                )}
+                <a href="/rpg.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 text-white font-black text-xs shadow-lg hover:scale-105 transition font-fantasy flex items-center gap-1.5">
+                  <img src="/assets/items/sword.png" class="w-4 h-4 object-contain" />
+                  <span>Vào Game RPG</span>
+                </a>
+              </div>
+            </div>
+          </header>
+
+          {/* NỘI DUNG CHÍNH */}
+          <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8">
+
+            {/* BẢNG CẢNH BÁO CHO HỌC SINH NẾU ĐANG ĐĂNG NHẬP BẰNG TÀI KHOẢN HỌC SINH */}
+            {isStudent && (
+              <div class="bg-gradient-to-r from-amber-950/90 to-purple-950/90 border-2 border-amber-500/60 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl animate-fade-in">
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl">⚠️</span>
+                  <div>
+                    <h4 class="font-bold text-amber-300 text-sm sm:text-base flex items-center gap-2">
+                      <span>Bạn đang ở chế độ xem của Học Sinh ({authUser.display_name})</span>
+                      <span class="text-xs px-2 py-0.5 rounded bg-emerald-600/40 text-emerald-300 font-semibold border border-emerald-400/40">Chỉ Xem</span>
+                    </h4>
+                    <p class="text-xs text-amber-100/80 mt-0.5">
+                      Tài khoản Học Sinh chỉ được phép xem trước và làm bài. Để tạo mới, chỉnh sửa hoặc xuất bản bộ đề 30 câu, vui lòng đăng nhập tài khoản Giáo Viên.
+                    </p>
+                  </div>
+                </div>
+                <button onClick={handleQuickTeacherLogin} disabled={quickLoginLoading} class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-black text-xs shadow-lg transform hover:scale-105 active:scale-95 transition flex items-center gap-2 whitespace-nowrap">
+                  <span>👩‍🏫</span> {quickLoginLoading ? 'Đang chuyển...' : 'Chuyển Sang Giáo Viên (1-Click)'}
+                </button>
+              </div>
+            )}
+
+            {!authUser && (
+              <div class="bg-gradient-to-r from-blue-950/80 to-purple-950/80 border border-blue-400/40 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-fade-in">
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">💡</span>
+                  <div>
+                    <h4 class="font-bold text-blue-300 text-sm">Chế độ Khách (Xem trước)</h4>
+                    <p class="text-xs text-blue-100/80 mt-0.5">
+                      Bạn có thể trải nghiệm giao diện soạn bài. Để kích hoạt toàn quyền lưu đề và xuất bản cho học sinh, vui lòng đăng nhập tài khoản Giáo Viên.
+                    </p>
+                  </div>
+                </div>
+                <button onClick={handleQuickTeacherLogin} disabled={quickLoginLoading} class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-black font-black text-xs shadow-lg transition flex items-center gap-2 whitespace-nowrap">
+                  <span>🔑</span> {quickLoginLoading ? 'Đang vào...' : 'Đăng Nhập Nhanh Giáo Viên'}
+                </button>
+              </div>
+            )}
+            
+            {/* VIEW 1: DASHBOARD DANH SÁCH BỘ CÂU HỎI */}
+            {view === 'list' && (
+              <div class="space-y-6 animate-fade-in">
+                
+                {/* Banner & Nút Thao Tác Chính */}
+                <div class="fantasy-parchment-box p-6 flex flex-col sm:flex-row items-center justify-between gap-6 relative">
+                  <div class="corner-filigree-tl"></div>
+                  <div class="corner-filigree-tr"></div>
+                  <div class="corner-filigree-bl"></div>
+                  <div class="corner-filigree-br"></div>
+
+                  <div class="space-y-1.5 text-left">
+                    <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">HỆ THỐNG BIÊN SOẠN RIÊNG BIỆT</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-fantasy text-white">Quản Lý Toàn Bộ Đề Học Tập</h2>
+                    <p class="text-xs sm:text-sm text-gray-300 max-w-xl">
+                      Bạn tự tạo các bộ 30 câu hỏi. Học sinh sẽ chọn bộ câu hỏi của bạn để chiến đấu liên tục trên bất kỳ bản đồ và nhân vật nào!
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-3 shrink-0">
+                    <button onClick={() => setShowCreateModal(true)} class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 font-black text-sm text-white shadow-xl shadow-amber-500/20 font-fantasy flex items-center gap-2 transition transform hover:scale-105">
+                      <span>➕</span> TẠO BỘ CÂU HỎI MỚI
+                    </button>
+                    <button onClick={() => setShowImportModal(true)} class="px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-xs flex items-center gap-2 transition">
+                      <span>📥</span> Nhập Từ File
+                    </button>
+                    <button onClick={downloadSampleTemplate} class="px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-xs flex items-center gap-2 transition" title="Tải mẫu JSON 30 câu để xem định dạng">
+                      <span>📋</span> Tải File Mẫu
+                    </button>
+                  </div>
+                </div>
+
+                {/* Thanh Lọc & Tìm Kiếm */}
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-black/60 p-4 rounded-2xl border border-white/10">
+                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="🔍 Tìm kiếm theo tên bộ hoặc chủ đề..."
+                    class="bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-4 py-2.5 text-xs text-white outline-none" />
+
+                  <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
+                    class="bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-white outline-none">
+                    <option value="all">Tất cả môn học</option>
+                    <option value="math">Toán Học</option>
+                    <option value="english">Tiếng Anh</option>
+                    <option value="science">Khoa Học Tự Nhiên</option>
+                    <option value="history">Lịch Sử & Địa Lý</option>
+                  </select>
+
+                  <select value={filterGrade} onChange={(e) => setFilterGrade(e.target.value)}
+                    class="bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-white outline-none">
+                    <option value="all">Tất cả khối lớp</option>
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
+                      <option key={g} value={g}>Lớp {g}</option>
+                    ))}
+                  </select>
+
+                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+                    class="bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-white outline-none">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="published">Đã Xuất Bản (Học sinh thấy)</option>
+                    <option value="draft">Bản Nháp (Đang soạn)</option>
+                  </select>
+                </div>
+
+                {/* Danh Sách Thẻ Bộ Câu Hỏi */}
+                {loading ? (
+                  <div class="text-center py-16 text-amber-300 font-bold">Đang tải dữ liệu bộ câu hỏi...</div>
+                ) : filteredSets.length === 0 ? (
+                  <div class="fantasy-parchment-box p-12 text-center space-y-4">
+                    <span class="text-5xl block">📜</span>
+                    <h3 class="text-xl font-black font-fantasy text-white">Chưa có bộ câu hỏi nào phù hợp</h3>
+                    <p class="text-xs text-gray-400 max-w-md mx-auto">
+                      Hãy nhấn nút "+ TẠO BỘ CÂU HỎI MỚI" hoặc "Nhập Từ File" để tự tạo bộ 30 câu hỏi của riêng bạn.
+                    </p>
+                    <button onClick={() => setShowCreateModal(true)} class="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs font-fantasy">
+                      + BẮT ĐẦU TẠO BỘ ĐẦU TIÊN
+                    </button>
+                  </div>
+                ) : (
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {filteredSets.map(set => {
+                      const isPublished = set.status === 'published';
+                      const isComplete30 = set.questionCount === 30;
+
+                      return (
+                        <div key={set.id} class="fantasy-parchment-box p-5 flex flex-col justify-between space-y-4 hover:border-amber-400 transition transform hover:-translate-y-1 shadow-xl">
+                          <div class="space-y-3 text-left">
+                            <div class="flex items-center justify-between gap-2">
+                              <span class={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                                isPublished 
+                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              }`}>
+                                {isPublished ? '● Đã Xuất Bản' : '○ Bản Nháp'}
+                              </span>
+
+                              <span class="text-[10px] text-gray-400 font-mono">
+                                Lớp {set.grade} • {set.subject.toUpperCase()}
+                              </span>
+                            </div>
+
+                            <div>
+                              <h3 class="font-extrabold text-base text-white leading-snug line-clamp-2">{set.title}</h3>
+                              <p class="text-xs text-amber-300/80 font-medium mt-1 truncate">{set.topic || 'Chủ đề chung'}</p>
+                            </div>
+
+                            {/* Tiến Độ Số Câu: x / 30 */}
+                            <div class="space-y-1">
+                              <div class="flex items-center justify-between text-[11px] font-bold">
+                                <span class="text-gray-300">Tiến độ câu hỏi:</span>
+                                <span class={`font-mono ${isComplete30 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {set.questionCount} / 30 câu
+                                </span>
+                              </div>
+                              <div class="w-full bg-black/60 h-2.5 rounded-full overflow-hidden border border-white/10">
+                                <div class={`h-full transition-all duration-500 ${
+                                  isComplete30 ? 'bg-gradient-to-r from-emerald-500 to-green-400' : 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                                }`} style={{ width: `${Math.min(100, Math.round((set.questionCount / 30) * 100))}%` }}></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Hành Động Nút Bấm */}
+                          <div class="pt-3 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+                            <button onClick={() => openEditor(set.id)} class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-black text-white flex items-center gap-1.5 shadow">
+                              <span>✏️</span> Soạn 30 Câu
+                            </button>
+
+                            <div class="flex items-center gap-1.5">
+                              <button onClick={() => handleDuplicateSet(set.id)} title="Nhân bản bộ này" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs">
+                                📋
+                              </button>
+                              <a href={`/api/custom-question-sets/${set.id}/export`} title="Tải file JSON dự phòng" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs">
+                                💾
+                              </a>
+                              <button onClick={() => handleDeleteSet(set.id, set.title)} title="Xóa bộ câu hỏi" class="p-2 rounded-xl bg-red-600/20 hover:bg-red-600/40 text-red-300 text-xs">
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* VIEW 2: TRÌNH BIÊN SOẠN 30 CÂU HỎI (EDITOR VIEW) */}
+            {view === 'editor' && currentSet && (
+              <div class="space-y-6 animate-fade-in text-left">
+                
+                {/* Thanh Header Trình Soạn Thảo */}
+                <div class="fantasy-parchment-box p-5 space-y-4 relative">
+                  <div class="corner-filigree-tl"></div>
+                  <div class="corner-filigree-tr"></div>
+                  <div class="corner-filigree-bl"></div>
+                  <div class="corner-filigree-br"></div>
+
+                  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-500/20 pb-4">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-purple-500/30 text-purple-200 border border-purple-400/30">
+                          {currentSet.subject.toUpperCase()} • LỚP {currentSet.grade}
+                        </span>
+                        <span class={`text-xs px-2.5 py-0.5 rounded-full font-black border ${
+                          currentSet.status === 'published' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' : 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                        }`}>
+                          {currentSet.status === 'published' ? '● Đã Xuất Bản' : '○ Bản Nháp'}
+                        </span>
+                        {saveStatus && <span class="text-xs text-yellow-300 font-bold animate-pulse">{saveStatus}</span>}
+                      </div>
+                      <h2 class="text-2xl font-black font-fantasy text-white mt-1">{currentSet.title}</h2>
+                      <p class="text-xs text-gray-300 mt-0.5">{currentSet.description || 'Chưa có mô tả'}</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      <button onClick={() => handleSaveSet('draft')} class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold flex items-center gap-1.5 transition">
+                        <span>💾</span> Lưu Bản Nháp
+                      </button>
+
+                      <button onClick={() => handleSaveSet('published')}
+                        class={`px-6 py-2.5 rounded-xl font-black text-xs shadow-lg flex items-center gap-1.5 transition transform hover:scale-105 font-fantasy ${
+                          (currentSet.questions || []).length === 30 
+                            ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 text-white shadow-emerald-500/30' 
+                            : 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-amber-500/30'
+                        }`}>
+                        <span>🚀</span> XUẤT BẢN CHO HỌC SINH CHƠI
+                      </button>
+
+                      <button onClick={() => setShowPreviewModal(true)} class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                        👁️ Xem Trước
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tiến Độ Hoàn Thiện & Cảnh Báo Tính Hợp Lệ */}
+                  {(() => {
+                    const count = (currentSet.questions || []).length;
+                    const is30 = count === 30;
+
+                    return (
+                      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-black/60 p-3.5 rounded-2xl border border-white/10">
+                        <div class="flex items-center gap-3">
+                          <span class="text-base">{is30 ? '✅' : '⚠️'}</span>
+                          <div>
+                            <span class="font-bold text-white block">
+                              Số lượng câu hỏi: <span class={`font-mono text-sm ${is30 ? 'text-emerald-400' : 'text-amber-400'}`}>{count} / 30 câu</span>
+                            </span>
+                            <span class="text-[11px] text-gray-400">
+                              {is30 ? 'Đã đủ 30 câu! Có thể xuất bản để học sinh chọn.' : 'Chế độ Hành trình yêu cầu đúng 30 câu để xuất bản.'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          {count < 30 && (
+                            <button onClick={handleFillUpTo30} class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-bold text-xs">
+                              ⚡ Điền Nhanh Cho Đủ 30 Câu
+                            </button>
+                          )}
+                          <button onClick={handleAddQuestion} class="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-1 shadow">
+                            <span>➕</span> Thêm Câu Hỏi
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* DANH SÁCH CÁC CÂU HỎI TỪ CÂU 1 ĐẾN CÂU 30 */}
+                <div class="space-y-5">
+                  {(currentSet.questions || []).map((q, qIdx) => {
+                    const letters = ['A', 'B', 'C', 'D'];
+                    const hasCorrect = q.options && q.options.includes(q.correctAnswer);
+
+                    return (
+                      <div key={q.id || qIdx} id={`question-card-${qIdx}`} class="fantasy-parchment-box p-5 space-y-4 relative border-white/15 hover:border-amber-400/60 transition">
+                        
+                        {/* Header câu hỏi */}
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                          <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-full bg-purple-700/80 border border-purple-400/50 flex items-center justify-center font-black text-xs text-amber-300 font-mono">
+                              {qIdx + 1}
+                            </span>
+                            <span class="text-sm font-black font-fantasy text-white">Câu Hỏi {qIdx + 1} / 30</span>
+                            {!hasCorrect && (
+                              <span class="text-[10px] bg-red-600/30 border border-red-500 text-red-200 px-2 py-0.5 rounded-full font-bold">
+                                ⚠️ Chưa chọn đáp án đúng!
+                              </span>
+                            )}
+                          </div>
+
+                          <div class="flex items-center gap-1">
+                            <button onClick={() => moveQuestion(qIdx, -1)} disabled={qIdx === 0} title="Đưa lên" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs">
+                              ⬆️
+                            </button>
+                            <button onClick={() => moveQuestion(qIdx, 1)} disabled={qIdx === currentSet.questions.length - 1} title="Đưa xuống" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs">
+                              ⬇️
+                            </button>
+                            <button onClick={() => duplicateQuestion(qIdx)} title="Nhân bản câu này" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs">
+                              📋
+                            </button>
+                            <button onClick={() => deleteQuestion(qIdx)} title="Xóa câu này" class="p-1.5 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-300 text-xs">
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Nội dung câu hỏi */}
+                        <div class="space-y-1.5">
+                          <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold text-amber-300 uppercase">
+                              Nội Dung Câu Hỏi (Hỗ trợ công thức Toán học KaTeX):
+                            </label>
+                            <span class="text-[10px] text-gray-400">Ví dụ: $x^2 + 5 = 9$ hoặc $\frac{2}{3}$</span>
+                          </div>
+                          <textarea rows="2" value={q.question} onChange={(e) => updateQuestion(qIdx, 'question', e.target.value)}
+                            placeholder="Nhập nội dung câu hỏi tại đây..."
+                            class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl p-3 text-sm text-white font-medium outline-none resize-y" />
+                          
+                          {/* KaTeX Live Preview */}
+                          {q.question && q.question.includes('$') && (
+                            <div class="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs text-purple-200">
+                              <span class="text-[10px] text-purple-400 font-bold block mb-1">Xem trước công thức hiển thị:</span>
+                              <MathText text={q.question} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 4 Đáp án lựa chọn */}
+                        <div class="space-y-2">
+                          <label class="block text-xs font-bold text-amber-300 uppercase">
+                            4 Lựa Chọn Đáp Án (Tích chọn hình tròn để đặt làm Đáp Án Đúng):
+                          </label>
+
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {(q.options || ['A', 'B', 'C', 'D']).map((opt, optIdx) => {
+                              const isCorrect = q.correctAnswer === opt;
+
+                              return (
+                                <div key={optIdx} class={`p-2.5 rounded-2xl border-2 flex items-center gap-2.5 transition ${
+                                  isCorrect ? 'border-emerald-400 bg-emerald-950/50 ring-2 ring-emerald-500/30' : 'border-white/10 bg-black/50'
+                                }`}>
+                                  <input type="radio" name={`correct-ans-${qIdx}`} checked={isCorrect}
+                                    onChange={() => updateQuestion(qIdx, 'correctAnswer', opt)}
+                                    title="Chọn làm đáp án đúng"
+                                    class="w-5 h-5 accent-emerald-500 cursor-pointer shrink-0" />
+
+                                  <span class="w-6 h-6 rounded-full bg-white/10 font-bold text-xs flex items-center justify-center shrink-0 text-amber-300 font-mono">
+                                    {letters[optIdx]}
+                                  </span>
+
+                                  <input type="text" value={opt} onChange={(e) => updateOption(qIdx, optIdx, e.target.value)}
+                                    placeholder={`Đáp án ${letters[optIdx]}...`}
+                                    class="w-full bg-transparent border-none text-xs sm:text-sm font-medium text-white outline-none" />
+
+                                  {isCorrect && (
+                                    <span class="text-[10px] font-black uppercase text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                                      ĐÚNG
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Lời giải thích & Độ khó */}
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                          <div class="sm:col-span-2 space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-300 uppercase">Lời Giải Thích Chi Tiết (Hiện khi học sinh làm xong câu):</label>
+                            <input type="text" value={q.explanation || ''} onChange={(e) => updateQuestion(qIdx, 'explanation', e.target.value)}
+                              placeholder="Giải thích từng bước vì sao đáp án này đúng..."
+                              class="w-full bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none" />
+                          </div>
+
+                          <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-300 uppercase">Độ Khó Câu:</label>
+                            <select value={q.difficulty || 'medium'} onChange={(e) => updateQuestion(qIdx, 'difficulty', e.target.value)}
+                              class="w-full bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                              <option value="easy">Cơ bản (Dễ) - 25 Damage</option>
+                              <option value="medium">Tiêu chuẩn (Vừa) - 35 Damage</option>
+                              <option value="hard">Nâng cao (Khó) - 50 Damage</option>
+                            </select>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Footer Lưu Trữ Dưới Cùng */}
+                <div class="fantasy-parchment-box p-5 flex items-center justify-between sticky bottom-4 z-30 shadow-2xl backdrop-blur-md">
+                  <div class="flex items-center gap-3">
+                    <button onClick={handleAddQuestion} class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2">
+                      <span>➕</span> Thêm Câu Tiếp Theo
+                    </button>
+                    <span class="text-xs text-gray-300">Tổng: {currentSet.questions.length}/30 câu</span>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <button onClick={() => handleSaveSet('draft')} class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                      Lưu Bản Nháp 💾
+                    </button>
+                    <button onClick={() => handleSaveSet('published')} class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 text-white font-black text-xs font-fantasy shadow-lg">
+                      XUẤT BẢN BỘ CÂU HỎI 🚀
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* MODAL 1: TẠO MỚI BỘ CÂU HỎI */}
+            {showCreateModal && (
+              <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div class="w-full max-w-lg fantasy-parchment-box p-6 space-y-5 text-left relative">
+                  <div class="corner-filigree-tl"></div>
+                  <div class="corner-filigree-tr"></div>
+                  <div class="corner-filigree-bl"></div>
+                  <div class="corner-filigree-br"></div>
+
+                  <div class="border-b border-amber-500/20 pb-3">
+                    <h3 class="text-xl font-black font-fantasy text-amber-300">Tạo Bộ Câu Hỏi Mới</h3>
+                    <p class="text-xs text-gray-300">Thiết lập thông tin chung trước khi bước vào soạn 30 câu hỏi</p>
+                  </div>
+
+                  <form onSubmit={handleCreateSet} class="space-y-4 text-xs">
+                    <div>
+                      <label class="block font-bold text-amber-300 uppercase mb-1">Tên Bộ Câu Hỏi (*):</label>
+                      <input type="text" required value={newSetData.title}
+                        onChange={(e) => setNewSetData({ ...newSetData, title: e.target.value })}
+                        placeholder="Ví dụ: Phân số & Số thập phân – Toán lớp 6"
+                        class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white font-bold outline-none" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label class="block font-bold text-gray-300 uppercase mb-1">Môn Học:</label>
+                        <select value={newSetData.subject} onChange={(e) => setNewSetData({ ...newSetData, subject: e.target.value })}
+                          class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white outline-none">
+                          <option value="math">Toán Học</option>
+                          <option value="english">Tiếng Anh</option>
+                          <option value="science">Khoa Học Tự Nhiên</option>
+                          <option value="history">Lịch Sử & Địa Lý</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label class="block font-bold text-gray-300 uppercase mb-1">Khối Lớp:</label>
+                        <select value={newSetData.grade} onChange={(e) => setNewSetData({ ...newSetData, grade: parseInt(e.target.value, 10) })}
+                          class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white outline-none">
+                          {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
+                            <option key={g} value={g}>Lớp {g}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-gray-300 uppercase mb-1">Chủ Đề Cụ Thể:</label>
+                      <input type="text" value={newSetData.topic}
+                        onChange={(e) => setNewSetData({ ...newSetData, topic: e.target.value })}
+                        placeholder="Ví dụ: Phép tính với phân số, phân số tối giản"
+                        class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white outline-none" />
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-gray-300 uppercase mb-1">Mô Tả / Hướng Dẫn:</label>
+                      <textarea rows="2" value={newSetData.description}
+                        onChange={(e) => setNewSetData({ ...newSetData, description: e.target.value })}
+                        placeholder="Mô tả mục tiêu của bộ câu hỏi này..."
+                        class="w-full bg-black/60 border border-white/20 focus:border-amber-400 rounded-xl p-3 text-white outline-none" />
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                      <button type="button" onClick={() => setShowCreateModal(false)} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-bold">
+                        Hủy
+                      </button>
+                      <button type="submit" class="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 font-black text-white font-fantasy">
+                        Tạo & Soạn Câu Hỏi ➡️
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* MODAL 2: NHẬP CÂU HỎI TỪ FILE / VĂN BẢN */}
+            {showImportModal && (
+              <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div class="w-full max-w-xl fantasy-parchment-box p-6 space-y-4 text-left relative">
+                  <div class="corner-filigree-tl"></div>
+                  <div class="corner-filigree-tr"></div>
+                  <div class="corner-filigree-bl"></div>
+                  <div class="corner-filigree-br"></div>
+
+                  <div class="border-b border-amber-500/20 pb-2">
+                    <h3 class="text-xl font-black font-fantasy text-amber-300">Nhập Câu Hỏi Hàng Loạt</h3>
+                    <p class="text-xs text-gray-300">Hỗ trợ dán văn bản phân tách bằng dấu gạch đứng (|) hoặc định dạng JSON</p>
+                  </div>
+
+                  <form onSubmit={handleImportSubmit} class="space-y-3 text-xs">
+                    <div>
+                      <label class="block font-bold text-amber-300 uppercase mb-1">Tên Bộ Đề:</label>
+                      <input type="text" required value={importData.title}
+                        onChange={(e) => setImportData({ ...importData, title: e.target.value })}
+                        placeholder="Nhập tên bộ đề nhập từ file..."
+                        class="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-white outline-none font-bold" />
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                      <label class="font-bold text-gray-300">Định dạng:</label>
+                      <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" checked={importData.format === 'text'} onChange={() => setImportData({ ...importData, format: 'text' })} />
+                        <span>Văn bản / CSV (Câu hỏi | Đáp án A | Đáp án B* | Đáp án C | Đáp án D)</span>
+                      </label>
+                      <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" checked={importData.format === 'json'} onChange={() => setImportData({ ...importData, format: 'json' })} />
+                        <span>JSON Array</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-gray-300 uppercase mb-1">Dán Dữ Liệu Vào Đây (*):</label>
+                      <textarea rows="8" required value={importData.rawText}
+                        onChange={(e) => setImportData({ ...importData, rawText: e.target.value })}
+                        placeholder={importData.format === 'text' 
+                          ? "Câu hỏi 1 | Đáp án 1* | Đáp án 2 | Đáp án 3 | Đáp án 4 | Lời giải thích\nCâu hỏi 2 | Đáp án A | Đáp án B* | Đáp án C | Đáp án D | Lời giải thích\n(Dấu * ở đáp án là đáp án đúng)"
+                          : '[{"question": "...", "options": ["A","B","C","D"], "correctAnswer": "A", "explanation": "..."}]'}
+                        class="w-full bg-black/60 border border-white/20 rounded-xl p-3 font-mono text-[11px] text-gray-200 outline-none" />
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2 border-t border-white/10">
+                      <button type="button" onClick={() => setShowImportModal(false)} class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-bold">
+                        Đóng
+                      </button>
+                      <button type="submit" class="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-white font-fantasy">
+                        Nhập Vào Hệ Thống
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* MODAL 3: XEM TRƯỚC TOÀN BỘ 30 CÂU */}
+            {showPreviewModal && currentSet && (
+              <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+                <div class="w-full max-w-3xl max-h-[85vh] flex flex-col fantasy-parchment-box p-6 space-y-4 text-left relative">
+                  <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+                    <div>
+                      <h3 class="text-xl font-black font-fantasy text-amber-300">Xem Trước: {currentSet.title}</h3>
+                      <p class="text-xs text-gray-300">Tổng cộng: {currentSet.questions.length} câu hỏi</p>
+                    </div>
+                    <button onClick={() => setShowPreviewModal(false)} class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                      Đóng ✕
+                    </button>
+                  </div>
+
+                  <div class="flex-1 overflow-y-auto space-y-3 pr-2">
+                    {currentSet.questions.map((q, idx) => (
+                      <div key={idx} class="p-3.5 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
+                        <div class="flex items-center gap-2 font-bold text-amber-300">
+                          <span>Câu {idx + 1}:</span>
+                          <span class="text-white"><MathText text={q.question} /></span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pl-4">
+                          {(q.options || []).map((opt, oIdx) => (
+                            <div key={oIdx} class={`p-1.5 rounded-lg border text-[11px] ${
+                              opt === q.correctAnswer ? 'border-emerald-400 bg-emerald-950/60 text-emerald-200 font-bold' : 'border-white/10 text-gray-300'
+                            }`}>
+                              {['A', 'B', 'C', 'D'][oIdx]}. <MathText text={opt} />
+                              {opt === q.correctAnswer && <span class="ml-1 text-emerald-400">✓</span>}
+                            </div>
+                          ))}
+                        </div>
+                        {q.explanation && (
+                          <div class="text-[11px] text-gray-400 italic pl-4">💡 {q.explanation}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+        </div>
+      );
+    }
+
+    ReactDOM.render(<CreatorApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --color-red: #e21b3c;
+  --color-blue: #1368ce;
+  --color-yellow: #d89e00;
+  --color-green: #26890c;
+  --color-purple: #46178f;
+  --color-gold: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at 50% 15%, #2a105c 0%, #0d041e 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.bg-grid-pattern {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* 4 Khối màu Kahoot phong cách hiện đại */
+.btn-choice-red {
+  background: linear-gradient(135deg, #e21b3c 0%, #b8142e 100%);
+  box-shadow: 0 8px 0 #800c1e, 0 12px 20px rgba(226, 27, 60, 0.4);
+}
+.btn-choice-red:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 #800c1e;
+}
+
+.btn-choice-blue {
+  background: linear-gradient(135deg, #1368ce 0%, #0d4fa0 100%);
+  box-shadow: 0 8px 0 #083269, 0 12px 20px rgba(19, 104, 206, 0.4);
+}
+.btn-choice-blue:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 #083269;
+}
+
+.btn-choice-yellow {
+  background: linear-gradient(135deg, #d89e00 0%, #ab7d00 100%);
+  box-shadow: 0 8px 0 #735400, 0 12px 20px rgba(216, 158, 0, 0.4);
+}
+.btn-choice-yellow:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 #735400;
+}
+
+.btn-choice-green {
+  background: linear-gradient(135deg, #26890c 0%, #1b6807 100%);
+  box-shadow: 0 8px 0 #114204, 0 12px 20px rgba(38, 137, 12, 0.4);
+}
+.btn-choice-green:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 #114204;
+}
+
+/* Animation Rương Vàng Blooket */
+@keyframes chestBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.05); }
+}
+
+.chest-box {
+  animation: chestBounce 2s infinite ease-in-out;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.chest-box:hover {
+  transform: translateY(-16px) scale(1.1);
+  filter: drop-shadow(0 15px 25px rgba(245, 158, 11, 0.6));
+}
+
+/* 5s đếm ngược khẩn cấp */
+@keyframes rushPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(226, 27, 60, 0.7); }
+  50% { transform: scale(1.08); box-shadow: 0 0 25px 10px rgba(226, 27, 60, 0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(226, 27, 60, 0.7); }
+}
+
+.timer-rush {
+  animation: rushPulse 0.5s infinite ease-in-out !important;
+  color: #ff2a4b !important;
+}
+
+/* ======================================================== */
+/* HOẠT HỌA CHIẾN ĐẤU RPG BOSS & HEROES (MỚI NÂNG CẤP)     */
+/* ======================================================== */
+
+/* Boss thở bồng bềnh tự nhiên */
+@keyframes bossBreathing {
+  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 10px 20px rgba(239, 68, 68, 0.4)); }
+  50% { transform: translateY(-14px) scale(1.06); filter: drop-shadow(0 20px 30px rgba(239, 68, 68, 0.8)); }
+}
+
+.boss-idle-anim {
+  animation: bossBreathing 3s infinite ease-in-out;
+}
+
+/* Hiệu ứng Rung Giật dữ dội khi Boss bị trúng đòn */
+@keyframes bossHitShake {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  15% { transform: translate(-14px, 8px) scale(0.94); filter: brightness(2.5) drop-shadow(0 0 35px #ef4444) !important; }
+  30% { transform: translate(14px, -8px) scale(1.08); filter: brightness(2) drop-shadow(0 0 30px #f97316) !important; }
+  45% { transform: translate(-10px, -6px) scale(0.96); }
+  60% { transform: translate(10px, 6px) scale(1.04); }
+  75% { transform: translate(-6px, 2px) scale(0.98); }
+}
+
+.boss-damaged-anim {
+  animation: bossHitShake 0.55s ease-in-out;
+}
+
+/* Rung màn hình điện thoại (Haptic visual shake) */
+@keyframes screenShakeAnim {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-6px, 4px); }
+  40% { transform: translate(6px, -4px); }
+  60% { transform: translate(-4px, -2px); }
+  80% { transform: translate(4px, 2px); }
+}
+
+.mobile-screen-shake {
+  animation: screenShakeAnim 0.35s ease-in-out;
+}
+
+/* Hoạt họa 1: Kiếm Khí Chém Xuyên Màn Hình (Chiến Binh) */
+@keyframes slashBladeAnim {
+  0% { transform: translateY(-100%) rotate(-45deg) scaleX(0.2); opacity: 0; }
+  30% { opacity: 1; transform: translateY(0) rotate(-45deg) scaleX(1.4); }
+  100% { transform: translateY(100%) rotate(-45deg) scaleX(0.1); opacity: 0; }
+}
+.animate-slash-blade {
+  animation: slashBladeAnim 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+/* Hoạt họa 2: Cầu Lửa Ma Thuật Nổ Tung (Phù Thủy) */
+@keyframes magicBurstAnim {
+  0% { transform: scale(0.1); opacity: 0; }
+  40% { transform: scale(1.6); opacity: 1; filter: brightness(2); }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.animate-magic-burst {
+  animation: magicBurstAnim 0.5s ease-out forwards;
+}
+
+/* Hoạt họa 3: Mưa Tên Xuyên Phá (Cung Thủ) */
+@keyframes arrowVolleyAnim {
+  0% { transform: translateY(120%) scaleY(0.4); opacity: 0; }
+  50% { opacity: 1; transform: translateY(0) scaleY(1.2); }
+  100% { transform: translateY(-120%) scaleY(0.4); opacity: 0; }
+}
+.animate-arrow-volley {
+  animation: arrowVolleyAnim 0.4s ease-in-out forwards;
+}
+
+/* Hoạt họa 4: Sóng Xung Kích Khiên Thánh (Hiệp Sĩ) */
+@keyframes shieldPulseAnim {
+  0% { transform: scale(0.2); opacity: 0; }
+  50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 40px #f59e0b); }
+  100% { transform: scale(2); opacity: 0; }
+}
+.animate-shield-pulse {
+  animation: shieldPulseAnim 0.55s ease-out forwards;
+}
+
+/* Sát thương bay lên (Damage Floating Number) */
+@keyframes floatDamage {
+  0% { opacity: 0; transform: translateY(15px) scale(0.7); }
+  25% { opacity: 1; transform: translateY(-10px) scale(1.3); }
+  75% { opacity: 0.9; transform: translateY(-35px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-65px) scale(0.9); }
+}
+
+.damage-float {
+  position: absolute;
+  animation: floatDamage 1.3s forwards cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  font-weight: 900;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.9), 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Thanh máu Boss (Boss HP Bar) */
+.hp-bar-fill {
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.8);
+}
+
+/* Thanh Nộ Mana */
+.mana-bar-fill {
+  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
+}
+
+/* Hào quang nhân vật (Hero Auras) */
+.aura-warrior {
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.3);
+}
+.aura-mage {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), inset 0 0 15px rgba(168, 85, 247, 0.3);
+}
+.aura-archer {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), inset 0 0 15px rgba(16, 185, 129, 0.3);
+}
+.aura-knight {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.5), inset 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+/* Podium bục vinh danh */
+.podium-1 {
+  background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+}
+.podium-2 {
+  background: linear-gradient(180deg, #e0e0e0 0%, #9e9e9e 100%);
+  box-shadow: 0 10px 30px rgba(224, 224, 224, 0.3);
+}
+.podium-3 {
+  background: linear-gradient(180deg, #cd7f32 0%, #8b4513 100%);
+  box-shadow: 0 10px 30px rgba(205, 127, 50, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ======================================================== */
+/* EDUQUEST PREMIUM 2D FANTASY RPG STYLES (MATCHING ASSETS) */
+/* ======================================================== */
+
+/* Parchment question box with gilded frame */
+.fantasy-parchment-box {
+  background: radial-gradient(circle at 50% 20%, #241a33 0%, #150e21 100%);
+  border: 3px solid #d4af37;
+  border-radius: 20px;
+  box-shadow: 
+    0 0 0 2px #4a3618,
+    0 15px 35px rgba(0, 0, 0, 0.8),
+    inset 0 0 30px rgba(212, 175, 55, 0.15);
+  position: relative;
+}
+
+.fantasy-parchment-box::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: 4px; bottom: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+/* Corner ornamental filigree studs */
+.corner-filigree-tl {
+  position: absolute; top: 6px; left: 6px; width: 14px; height: 14px;
+  border-top: 3px solid #f6d365; border-left: 3px solid #f6d365;
+}
+.corner-filigree-tr {
+  position: absolute; top: 6px; right: 6px; width: 14px; height: 14px;
+  border-top: 3px solid #f6d365; border-right: 3px solid #f6d365;
+}
+.corner-filigree-bl {
+  position: absolute; bottom: 6px; left: 6px; width: 14px; height: 14px;
+  border-bottom: 3px solid #f6d365; border-left: 3px solid #f6d365;
+}
+.corner-filigree-br {
+  position: absolute; bottom: 6px; right: 6px; width: 14px; height: 14px;
+  border-bottom: 3px solid #f6d365; border-right: 3px solid #f6d365;
+}
+
+/* 4 Jewel-toned 3D Beveled Buttons from Reference 04 */
+.fantasy-btn-a {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  border: 2px solid #93c5fd;
+  box-shadow: 0 6px 0 #1e3a8a, 0 10px 20px rgba(37, 99, 235, 0.4);
+  transition: all 0.12s ease;
+}
+.fantasy-btn-a:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #1e3a8a, 0 14px 24px rgba(37, 99, 235, 0.6);
+  filter: brightness(1.1);
+}
+.fantasy-btn-a:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #1e3a8a;
+}
+
+.fantasy-btn-b {
+  background: linear-gradient(180deg, #10b981 0%, #047857 100%);
+  border: 2px solid #a7f3d0;
+  box-shadow: 0 6px 0 #064e3b, 0 10px 20px rgba(16, 185, 129, 0.4);
+  transition: all 0.12s ease;
+}
+.fantasy-btn-b:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #064e3b, 0 14px 24px rgba(16, 185, 129, 0.6);
+  filter: brightness(1.1);
+}
+.fantasy-btn-b:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #064e3b;
+}
+
+.fantasy-btn-c {
+  background: linear-gradient(180deg, #a855f7 0%, #7e22ce 100%);
+  border: 2px solid #e9d5ff;
+  box-shadow: 0 6px 0 #581c87, 0 10px 20px rgba(168, 85, 247, 0.4);
+  transition: all 0.12s ease;
+}
+.fantasy-btn-c:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #581c87, 0 14px 24px rgba(168, 85, 247, 0.6);
+  filter: brightness(1.1);
+}
+.fantasy-btn-c:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #581c87;
+}
+
+.fantasy-btn-d {
+  background: linear-gradient(180deg, #f43f5e 0%, #be123c 100%);
+  border: 2px solid #fecdd3;
+  box-shadow: 0 6px 0 #881337, 0 10px 20px rgba(244, 63, 94, 0.4);
+  transition: all 0.12s ease;
+}
+.fantasy-btn-d:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #881337, 0 14px 24px rgba(244, 63, 94, 0.6);
+  filter: brightness(1.1);
+}
+.fantasy-btn-d:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #881337;
+}
+
+/* Side gilded navigation button from Reference 04 */
+.gilded-action-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffd700 0%, #b8860b 80%, #7c5a05 100%);
+  border: 2px solid #fff2a8;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.gilded-action-btn:hover {
+  transform: scale(1.12) translateY(-2px);
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.6), inset 0 2px 6px #fff;
+}
+.gilded-action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Character shadow ellipse */
+.entity-shadow {
+  width: 140px;
+  height: 28px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+}
+
+/* Gentle idle breathing for hero and monster sprites */
+@keyframes heroIdleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.hero-sprite-idle {
+  animation: heroIdleFloat 2.6s infinite ease-in-out;
+}
+
+@keyframes monsterIdleFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+.monster-sprite-idle {
+  animation: monsterIdleFloat 2.2s infinite ease-in-out;
+}
+
+/* Hero attack rush */
+@keyframes heroAttackRush {
+  0% { transform: translateX(0) scale(1); }
+  30% { transform: translateX(-20px) scale(0.95); }
+  60% { transform: translateX(110px) scale(1.15); filter: brightness(1.4); }
+  100% { transform: translateX(0) scale(1); }
+}
+.hero-attacking-anim {
+  animation: heroAttackRush 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* World Map Golden Stage Nodes */
+@keyframes nodePulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); }
+  50% { box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.9); transform: scale(1.1); }
+}
+.map-node-active {
+  animation: nodePulseGlow 1.8s infinite ease-in-out;
+}
+
+/* Item Rarity Frames */
+.rarity-common {
+  border: 2px solid #64748b;
+  background: radial-gradient(circle, rgba(100, 116, 139, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%);
+}
+.rarity-rare {
+  border: 2px solid #0ea5e9;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+}
+.rarity-epic {
+  border: 2px solid #a855f7;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}
+.rarity-legendary {
+  border: 2px solid #f59e0b;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(15, 23, 42, 0.8) 100%);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+}
+
+/* ======================================================== */
+/* ADVANCED ROGUELITE COMBAT & SKILL ANIMATIONS             */
+/* ======================================================== */
+
+/* 1. Song Kiếm: Hai đường kiếm chém chéo liên tiếp */
+@keyframes dualSlashLeft {
+  0% { transform: translate(-80px, -80px) rotate(-45deg) scaleX(0.2); opacity: 0; }
+  30% { opacity: 1; transform: translate(0, 0) rotate(-45deg) scaleX(1.6); }
+  100% { transform: translate(80px, 80px) rotate(-45deg) scaleX(0.1); opacity: 0; }
+}
+@keyframes dualSlashRight {
+  0% { transform: translate(80px, -80px) rotate(45deg) scaleX(0.2); opacity: 0; }
+  30% { opacity: 1; transform: translate(0, 0) rotate(45deg) scaleX(1.6); }
+  100% { transform: translate(-80px, 80px) rotate(45deg) scaleX(0.1); opacity: 0; }
+}
+.animate-dual-slash-1 {
+  animation: dualSlashLeft 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+.animate-dual-slash-2 {
+  animation: dualSlashRight 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.15s forwards;
+}
+
+/* 2. Sấm Sét: Tia sét giáng thẳng từ trời xuống */
+@keyframes lightningBolt {
+  0% { transform: translateY(-120%) scaleX(0.3); opacity: 0; filter: brightness(3); }
+  25% { transform: translateY(0) scaleX(1.4); opacity: 1; filter: drop-shadow(0 0 45px #38bdf8); }
+  50% { transform: translateY(0) scaleX(1.1); opacity: 0.8; }
+  100% { transform: translateY(10%) scaleX(0.2); opacity: 0; }
+}
+.animate-lightning-strike {
+  animation: lightningBolt 0.5s ease-out forwards;
+}
+
+/* 3. Hỏa Cầu: Cầu lửa nổ tung rực rỡ */
+@keyframes fireballBurst {
+  0% { transform: scale(0.2) rotate(0deg); opacity: 0; }
+  40% { transform: scale(1.5) rotate(180deg); opacity: 1; filter: drop-shadow(0 0 40px #f97316); }
+  100% { transform: scale(2.2) rotate(360deg); opacity: 0; }
+}
+.animate-fireball-blast {
+  animation: fireballBurst 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* 4. Băng Giá: Lớp băng đóng băng quái vật */
+@keyframes frostFreezeAnim {
+  0% { transform: scale(0.6); opacity: 0; }
+  30% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 35px #38bdf8); }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+.animate-frost-freeze {
+  animation: frostFreezeAnim 0.45s ease-out forwards;
+}
+
+/* 5. Khiên Tri Thức: Vòng bảo hộ màu xanh ngọc bích */
+@keyframes shieldRotateGlow {
+  0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 25px rgba(56, 189, 248, 0.6); }
+  50% { transform: scale(1.05) rotate(180deg); box-shadow: 0 0 45px rgba(56, 189, 248, 0.9); }
+  100% { transform: scale(1) rotate(360deg); box-shadow: 0 0 25px rgba(56, 189, 248, 0.6); }
+}
+.aura-knowledge-shield {
+  animation: shieldRotateGlow 4s infinite linear;
+  border: 3px solid #38bdf8;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 6. Thẻ Roguelite Skill Draft */
+.card-roguelite {
+  background: radial-gradient(circle at 50% 10%, #261642 0%, #120a22 100%);
+  border: 2px solid #eab308;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), inset 0 0 25px rgba(234, 179, 8, 0.12);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+.card-roguelite:hover {
+  transform: translateY(-8px) scale(1.03);
+  border-color: #fde047;
+  box-shadow: 0 20px 45px rgba(234, 179, 8, 0.4), inset 0 0 30px rgba(254, 240, 138, 0.3);
+}
+
+/* 7. Level Up Sunburst Glow */
+@keyframes levelUpRays {
+  0% { transform: rotate(0deg); opacity: 0.6; }
+  50% { transform: rotate(180deg); opacity: 0.9; }
+  100% { transform: rotate(360deg); opacity: 0.6; }
+}
+.animate-level-up-rays {
+  animation: levelUpRays 12s infinite linear;
+}
+
+/* 8. Thú Cưng Hỗ Trợ Lao Tới */
+@keyframes petAssistDash {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  40% { transform: translate(120px, -20px) scale(1.4); filter: brightness(1.6); opacity: 1; }
+  80% { transform: translate(180px, 0) scale(1.2); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+.animate-pet-dash {
+  animation: petAssistDash 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

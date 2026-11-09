@@ -1,0 +1,114 @@
+[
+  {
+    "id": "quiz-warmup-fun",
+    "title": "🧠 5 Phút Khởi Động Não Bộ - Đố Vui Thông Minh",
+    "description": "Bộ câu hỏi khởi động nhanh rèn luyện tư duy phản xạ đầu giờ học.",
+    "category": "Đố Vui / Tư Duy",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Con số nào tiếp theo trong dãy: 2, 4, 8, 16, ...?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "24", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "32", "isCorrect": true, "color": "blue" },
+          { "id": "c", "text": "30", "isCorrect": false, "color": "yellow" },
+          { "id": "d", "text": "64", "isCorrect": false, "color": "green" }
+        ]
+      },
+      {
+        "id": "q2",
+        "question": "Cái gì có mặt mà không có miệng, có tay mà không có chân?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "Cái gương", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "Bức tranh", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "Cái đồng hồ", "isCorrect": true, "color": "yellow" },
+          { "id": "d", "text": "Cây bút", "isCorrect": false, "color": "green" }
+        ]
+      },
+      {
+        "id": "q3",
+        "question": "Hành tinh nào gần Mặt Trời nhất trong Hệ Mặt Trời?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "Sao Hỏa (Mars)", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "Sao Kim (Venus)", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "Trái Đất (Earth)", "isCorrect": false, "color": "yellow" },
+          { "id": "d", "text": "Sao Thủy (Mercury)", "isCorrect": true, "color": "green" }
+        ]
+      },
+      {
+        "id": "q4",
+        "question": "Trong tiếng Anh, từ trái nghĩa với 'INCREASE' (tăng lên) là gì?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "DECREASE", "isCorrect": true, "color": "red" },
+          { "id": "b", "text": "IMPROVE", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "EXPAND", "isCorrect": false, "color": "yellow" },
+          { "id": "d", "text": "CONTINUE", "isCorrect": false, "color": "green" }
+        ]
+      },
+      {
+        "id": "q5",
+        "question": "Một người đàn ông có 5 người con gái, mỗi người có 1 người anh trai. Hỏi ông có tất cả mấy người con?",
+        "timeLimit": 20,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "10 người con", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "5 người con", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "6 người con", "isCorrect": true, "color": "yellow" },
+          { "id": "d", "text": "9 người con", "isCorrect": false, "color": "green" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quiz-math-speed",
+    "title": "⚡ Toán Học Tia Chớp (Tính Nhanh)",
+    "description": "Các phép tính nhanh khởi động phản xạ tính nhẩm.",
+    "category": "Toán Học",
+    "questions": [
+      {
+        "id": "m1",
+        "question": "Tính nhẩm nhanh: 25 x 4 + 50 = ?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "150", "isCorrect": true, "color": "red" },
+          { "id": "b", "text": "125", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "200", "isCorrect": false, "color": "yellow" },
+          { "id": "d", "text": "100", "isCorrect": false, "color": "green" }
+        ]
+      },
+      {
+        "id": "m2",
+        "question": "Phân số 3/4 đổi ra phần trăm là bao nhiêu?",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "34%", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "75%", "isCorrect": true, "color": "blue" },
+          { "id": "c", "text": "60%", "isCorrect": false, "color": "yellow" },
+          { "id": "d", "text": "80%", "isCorrect": false, "color": "green" }
+        ]
+      },
+      {
+        "id": "m3",
+        "question": "Hình vuông có cạnh bằng 6 cm. Diện tích của nó là:",
+        "timeLimit": 15,
+        "points": 1000,
+        "answers": [
+          { "id": "a", "text": "24 cm²", "isCorrect": false, "color": "red" },
+          { "id": "b", "text": "12 cm²", "isCorrect": false, "color": "blue" },
+          { "id": "c", "text": "36 cm²", "isCorrect": true, "color": "yellow" },
+          { "id": "d", "text": "18 cm²", "isCorrect": false, "color": "green" }
+        ]
+      }
+    ]
+  }
+]

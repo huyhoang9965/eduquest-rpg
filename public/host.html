@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduQuest Studio - Màn Hình Máy Chiếu Giáo Viên (Host)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-grid-pattern min-h-screen flex flex-col justify-between">
+
+  <!-- TOP BAR -->
+  <header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <a href="/" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 flex items-center justify-center font-black text-xl shadow-lg shadow-purple-500/30 hover:scale-105 transition">
+        EQ
+      </a>
+      <div>
+        <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+          EduQuest <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-300 font-bold border border-purple-500/30">Host Studio 2.0</span>
+        </h1>
+        <p class="text-xs text-gray-400" id="headerModeText">Nền tảng game khởi động học tập đa chế độ</p>
+      </div>
+    </div>
+
+    <!-- PIN Badge (khi tạo phòng) -->
+    <div id="headerPinBadge" class="hidden items-center gap-3 bg-white/10 border border-white/20 px-5 py-2 rounded-2xl shadow-inner">
+      <span class="text-xs text-gray-300 font-bold uppercase tracking-wider">MÃ PIN PHÒNG:</span>
+      <span id="headerPinCode" class="text-3xl font-black text-yellow-400 tracking-widest font-mono">------</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center gap-3">
+      <button id="btnSoundToggle" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition flex items-center gap-2 text-sm font-semibold border border-white/10 shadow-sm">
+        <span id="soundIcon">🔊</span> <span id="soundLabel" class="hidden sm:inline">Âm thanh: Bật</span>
+      </button>
+      <button id="btnFullscreen" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition text-sm font-semibold border border-white/10" title="Toàn màn hình máy chiếu">
+        ⛶ Toàn màn hình
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+    <!-- VIEW 1: TRUNG TÂM BỘ ĐỀ & CHỌN CHẾ ĐỘ CHƠI -->
+    <section id="viewSetup" class="space-y-6">
+      
+      <!-- Banner giới thiệu -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-purple-900/50 via-indigo-900/40 to-black/60 border border-white/10 p-6 rounded-3xl backdrop-blur-md">
+        <div class="space-y-1 text-center sm:text-left">
+          <h2 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-2 justify-center sm:justify-start">
+            <span>🎯</span> Quản Lý Bộ Đề & Khởi Động Trò Chơi
+          </h2>
+          <p class="text-xs sm:text-sm text-gray-300">
+            Tự soạn câu hỏi, dán file tải lên nhanh, hoặc nhờ AI sinh đề chỉ trong 3 giây.
+          </p>
+        </div>
+        <!-- 3 Nút Công Cụ Quản Lý Đề -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5">
+          <button id="btnOpenCreatorModal" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition transform hover:scale-105">
+            <span>✍️</span> Tự Soạn Câu Hỏi Mới
+          </button>
+          <button id="btnOpenImportModal" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 flex items-center gap-2 transition transform hover:scale-105">
+            <span>📥</span> Tải Câu Hỏi Lên (File / Text)
+          </button>
+          <button id="btnOpenAiModal" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 font-bold text-xs sm:text-sm shadow-lg shadow-purple-500/30 flex items-center gap-2 transition transform hover:scale-105">
+            <span>✨</span> AI Tạo Đề Tự Động
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Cột 1 & 2: Danh sách bộ câu hỏi đã có -->
+        <div class="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>📚</span> Chọn Bộ Đề Để Chơi:
+              </h3>
+              <span id="quizCountBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/10 text-gray-300">
+                0 bộ đề
+              </span>
+            </div>
+
+            <div id="quizListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[380px] overflow-y-auto pr-2">
+              <div class="text-center py-12 text-gray-400 col-span-2">Đang tải danh sách câu hỏi...</div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+            <span>💡 Nhấn vào một thẻ đề để chọn ván đấu tiếp theo.</span>
+            <button id="btnExportQuiz" class="hover:text-purple-300 underline font-semibold">📤 Tải bộ đề đã chọn về máy (JSON)</button>
+          </div>
+        </div>
+
+        <!-- Cột 3: Chọn Chế Độ Chơi (3 GAME MODES) -->
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>🎮</span> Chọn Chế Độ Chơi:
+            </h3>
+
+            <!-- MODE 1: CLASSIC SPEED QUIZ (KAHOOT) -->
+            <label class="block cursor-pointer">
+              <input type="radio" name="gameMode" value="classic" checked class="peer sr-only">
+              <div class="p-3.5 rounded-2xl border-2 border-white/10 peer-checked:border-pink-500 peer-checked:bg-pink-500/10 transition space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-extrabold text-pink-400 text-sm flex items-center gap-1.5">⚡ Đấu Trường Tốc Độ</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-pink-500/30 text-pink-300 font-bold uppercase">Kahoot Style</span>
+                </div>
+                <p class="text-xs text-gray-300">Máy chiếu hiện câu hỏi, học sinh bấm 4 nút màu. Ai nhanh và chính xác nhất đứng Top đầu!</p>
+              </div>
+            </label>
+
+            <!-- MODE 2: PHIÊU LƯU DIỆT BOSS RPG (MỚI THEO YÊU CẦU!) -->
+            <label class="block cursor-pointer">
+              <input type="radio" name="gameMode" value="adventure" class="peer sr-only">
+              <div class="p-3.5 rounded-2xl border-2 border-white/10 peer-checked:border-red-500 peer-checked:bg-red-500/15 transition space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-extrabold text-red-400 text-sm flex items-center gap-1.5">🏰 Phiêu Lưu Diệt Boss</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/30 text-red-300 font-bold uppercase">RPG Quest Mới</span>
+                </div>
+                <p class="text-xs text-gray-300">Cả lớp nhập vai Chiến binh, Phù thủy, Cung thủ hợp sức tung đòn chém quái vật khổng lồ!</p>
+              </div>
+            </label>
+
+            <!-- MODE 3: GOLD QUEST (BLOOKET) -->
+            <label class="block cursor-pointer">
+              <input type="radio" name="gameMode" value="goldquest" class="peer sr-only">
+              <div class="p-3.5 rounded-2xl border-2 border-white/10 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-extrabold text-amber-400 text-sm flex items-center gap-1.5">🏴‍☠️ Truy Tìm Kho Báu</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/30 text-amber-300 font-bold uppercase">Blooket Gold</span>
+                </div>
+                <p class="text-xs text-gray-300">Đúng được mở 3 rương báu: cướp vàng hoặc hoán đổi kho vàng với bạn dẫn đầu phút chót!</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="pt-2 border-t border-white/10 space-y-2">
+            <button id="btnCreateRoom" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-white font-black text-lg shadow-xl shadow-emerald-500/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+              <span>🚀</span> TẠO PHÒNG CHƠI NGAY
+            </button>
+            <p class="text-center text-[11px] text-gray-400">Không yêu cầu học sinh cài app hay đăng ký tài khoản</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LOBBY SẢNH CHỜ (PIN TO RÕ + QR CODE) -->
+    <section id="viewLobby" class="hidden flex-col items-center justify-center space-y-6 py-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-5xl items-center">
+        <div class="lg:col-span-2 bg-white/10 border border-white/20 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6 shadow-2xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">HƯỚNG DẪN HỌC SINH:</span>
+              <h3 class="text-xl sm:text-2xl font-black text-white">Vào web bằng điện thoại hoặc máy tính</h3>
+            </div>
+            <div id="lobbyModeBadge" class="px-3.5 py-1 rounded-full bg-purple-500/30 text-purple-300 font-bold text-xs border border-purple-500/30">
+              Classic Mode
+            </div>
+          </div>
+
+          <!-- MÃ PIN TO -->
+          <div class="bg-black/50 rounded-3xl p-6 text-center border border-white/10 shadow-inner">
+            <span class="text-xs sm:text-sm text-yellow-400 font-bold uppercase tracking-widest">MÃ PIN THAM GIA</span>
+            <div id="lobbyPinDisplay" class="text-5xl sm:text-7xl font-black text-yellow-400 font-mono tracking-widest my-2 select-all">
+              ------
+            </div>
+            <p class="text-xs text-gray-300">Học sinh quét mã QR bên cạnh để vào phòng tự động không cần gõ link</p>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+              <span class="text-sm font-semibold text-emerald-300" id="playerCountLabel">0 học sinh đã sẵn sàng</span>
+            </div>
+            <button id="btnStartGame" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 font-black text-lg shadow-lg shadow-emerald-500/40 transition transform hover:scale-105 active:scale-95">
+              BẮT ĐẦU CHƠI ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="bg-white/10 border border-white/20 rounded-3xl p-6 flex flex-col items-center justify-center text-center space-y-3 backdrop-blur-md shadow-2xl">
+          <div class="p-3 bg-white rounded-2xl shadow-2xl">
+            <img id="lobbyQrCode" src="" alt="QR Tham Gia" class="w-48 h-48 rounded-lg object-contain">
+          </div>
+          <span class="text-xs text-gray-300 font-bold">Quét nhanh bằng camera điện thoại</span>
+        </div>
+      </div>
+
+      <!-- Danh sách học sinh trong sảnh chờ -->
+      <div class="w-full max-w-5xl bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+        <h4 class="text-sm font-bold text-gray-300 mb-4 flex items-center justify-between">
+          <span>👥 Danh Sách Học Sinh Trong Sảnh Chờ:</span>
+          <span class="text-xs font-normal text-gray-400">Cập nhật tự động theo thời gian thực</span>
+        </h4>
+        <div id="lobbyPlayerGrid" class="flex flex-wrap gap-3 max-h-52 overflow-y-auto">
+          <div class="text-gray-400 text-sm py-4 w-full text-center italic">Đang chờ học sinh đầu tiên nhập mã PIN...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: CÂU HỎI ĐANG DIỄN RA (QUESTION ACTIVE) -->
+    <section id="viewQuestion" class="hidden flex-col justify-between min-h-[520px] space-y-6">
+      
+      <!-- PHẦN CHIẾN ĐẤU BOSS (CHỈ HIỂN THỊ KHI CHƠI ADVENTURE RPG MODE) -->
+      <div id="adventureBossContainer" class="hidden flex-col bg-gradient-to-b from-red-950/60 via-purple-950/40 to-black/80 border-2 border-red-500/50 p-5 rounded-3xl backdrop-blur-md relative overflow-hidden shadow-2xl min-h-[220px] justify-between">
+        
+        <!-- Canvas VFX đạn bay & tia kiếm 60 FPS -->
+        <canvas id="battleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-20"></canvas>
+        
+        <!-- Floating damage container -->
+        <div id="damageFloatContainer" class="absolute inset-0 pointer-events-none z-30"></div>
+        
+        <!-- Thông tin Boss -->
+        <div class="flex items-center justify-between gap-4 relative z-10">
+          <div class="flex items-center gap-4">
+            <div id="bossAvatarEl" class="text-7xl sm:text-8xl boss-idle-anim transition-transform select-none">
+              🐉
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 id="bossNameEl" class="text-2xl sm:text-3xl font-black text-red-300">Hỏa Long Bão Lửa</h3>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-red-600/40 text-red-200 border border-red-400/40 uppercase font-black">TRÙM BẢO KÊ BÀI HỌC</span>
+              </div>
+              <p class="text-xs text-gray-300 mt-1">Cả lớp hãy trả lời đúng để cùng tung chiêu thức đánh bại Quái Thú!</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-black text-red-400 uppercase tracking-widest block">MÁU TRÙM (HP)</span>
+            <div id="bossHpText" class="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">4,500 / 6,000</div>
+          </div>
+        </div>
+
+        <!-- Thanh máu Boss khổng lồ -->
+        <div class="w-full bg-black/70 h-7 rounded-full p-1 border-2 border-red-500/30 overflow-hidden relative z-10 shadow-inner my-2">
+          <div id="bossHpBar" class="hp-bar-fill h-full rounded-full" style="width: 100%;"></div>
+        </div>
+
+        <!-- HÀNG NGŨ ANH HÙNG LỚP HỌC (HERO SQUAD) ĐANG TẤN CÔNG -->
+        <div class="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between">
+          <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+            <span>🛡️</span> Biệt Đội Khởi Động:
+          </span>
+          <div id="arenaHeroSquad" class="flex items-center gap-3 overflow-x-auto max-w-[80%] py-1">
+            <!-- Dynamic Hero Chibi Badges -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Header câu hỏi: Số câu, Đồng hồ đếm ngược, Tiến độ nộp bài -->
+      <div class="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-2xl">
+        <div class="flex items-center gap-3">
+          <span id="qIndexBadge" class="px-4 py-1.5 rounded-xl bg-purple-600 font-black text-lg">Câu 1/5</span>
+          <span id="qCategoryName" class="text-sm text-gray-300 hidden sm:inline">Khởi động</span>
+        </div>
+
+        <!-- Vòng đếm ngược (5s cuối dồn dập) -->
+        <div class="flex items-center gap-3">
+          <div id="timerContainer" class="w-16 h-16 rounded-full bg-white/10 border-4 border-purple-500 flex items-center justify-center font-black text-2xl transition-all">
+            <span id="timerText">15</span>
+          </div>
+        </div>
+
+        <!-- Tiến độ nộp bài -->
+        <div class="bg-black/40 px-4 py-2 rounded-xl border border-white/10 text-right">
+          <span class="text-xs text-gray-400 block">ĐÃ NỘP BÀI</span>
+          <span id="answersProgressText" class="text-lg font-black text-emerald-400">0 / 0</span>
+        </div>
+      </div>
+
+      <!-- Khung hiển thị câu hỏi TO RÕ TRÊN MÁY CHIẾU -->
+      <div class="bg-white/10 border border-white/20 p-8 sm:p-12 rounded-3xl text-center shadow-2xl backdrop-blur-md min-h-[160px] flex items-center justify-center">
+        <h2 id="qTitleDisplay" class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+          Nội dung câu hỏi đang được tải...
+        </h2>
+      </div>
+
+      <!-- 4 Ô đáp án màu sắc Kahoot -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div id="ansCard-a" class="btn-choice-red p-5 rounded-2xl flex items-center gap-4 transition text-white">
+          <span class="text-2xl sm:text-3xl font-black bg-black/20 w-12 h-12 rounded-xl flex items-center justify-center">▲</span>
+          <span id="ansText-a" class="text-lg sm:text-xl font-bold flex-1">Phương án A</span>
+        </div>
+
+        <div id="ansCard-b" class="btn-choice-blue p-5 rounded-2xl flex items-center gap-4 transition text-white">
+          <span class="text-2xl sm:text-3xl font-black bg-black/20 w-12 h-12 rounded-xl flex items-center justify-center">◆</span>
+          <span id="ansText-b" class="text-lg sm:text-xl font-bold flex-1">Phương án B</span>
+        </div>
+
+        <div id="ansCard-c" class="btn-choice-yellow p-5 rounded-2xl flex items-center gap-4 transition text-white">
+          <span class="text-2xl sm:text-3xl font-black bg-black/20 w-12 h-12 rounded-xl flex items-center justify-center">●</span>
+          <span id="ansText-c" class="text-lg sm:text-xl font-bold flex-1">Phương án C</span>
+        </div>
+
+        <div id="ansCard-d" class="btn-choice-green p-5 rounded-2xl flex items-center gap-4 transition text-white">
+          <span class="text-2xl sm:text-3xl font-black bg-black/20 w-12 h-12 rounded-xl flex items-center justify-center">■</span>
+          <span id="ansText-d" class="text-lg sm:text-xl font-bold flex-1">Phương án D</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: THỐNG KÊ KẾT QUẢ CÂU VỪA RỒI (RESULT & CHART) -->
+    <section id="viewResult" class="hidden flex-col items-center justify-between space-y-6">
+      <div class="text-center space-y-2">
+        <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold">ĐÁP ÁN CHÍNH XÁC</span>
+        <h3 id="resultAnswerTitle" class="text-2xl sm:text-3xl font-black text-white">
+          Đáp án đúng là: ...
+        </h3>
+      </div>
+
+      <!-- Biểu đồ 4 cột đáp án -->
+      <div class="w-full max-w-3xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+        <div class="grid grid-cols-4 gap-4 sm:gap-8 h-64 items-end pb-4 border-b border-white/20">
+          <div class="flex flex-col items-center h-full justify-end">
+            <span id="barCount-a" class="text-lg font-black text-white mb-2">0</span>
+            <div id="bar-a" class="w-full bg-red-600 rounded-t-xl transition-all duration-700 min-h-[12px] h-[12px]"></div>
+            <span class="mt-3 text-xl font-black">▲</span>
+          </div>
+          <div class="flex flex-col items-center h-full justify-end">
+            <span id="barCount-b" class="text-lg font-black text-white mb-2">0</span>
+            <div id="bar-b" class="w-full bg-blue-600 rounded-t-xl transition-all duration-700 min-h-[12px] h-[12px]"></div>
+            <span class="mt-3 text-xl font-black">◆</span>
+          </div>
+          <div class="flex flex-col items-center h-full justify-end">
+            <span id="barCount-c" class="text-lg font-black text-white mb-2">0</span>
+            <div id="bar-c" class="w-full bg-yellow-500 rounded-t-xl transition-all duration-700 min-h-[12px] h-[12px]"></div>
+            <span class="mt-3 text-xl font-black">●</span>
+          </div>
+          <div class="flex flex-col items-center h-full justify-end">
+            <span id="barCount-d" class="text-lg font-black text-white mb-2">0</span>
+            <div id="bar-d" class="w-full bg-emerald-600 rounded-t-xl transition-all duration-700 min-h-[12px] h-[12px]"></div>
+            <span class="mt-3 text-xl font-black">■</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnGoToLeaderboard" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 font-black text-lg shadow-xl shadow-purple-500/30 transition transform hover:scale-105">
+        XEM BẢNG XẾP HẠNG 🏆
+      </button>
+    </section>
+
+    <!-- VIEW 5: BẢNG XẾP HẠNG TOP 5 (LEADERBOARD) -->
+    <section id="viewLeaderboard" class="hidden flex-col items-center justify-between space-y-6">
+      <div class="text-center space-y-1">
+        <span class="text-xs uppercase tracking-widest text-yellow-400 font-bold">CỤC DIỆN ĐIỂM SỐ HIỆN TẠI</span>
+        <h3 class="text-3xl font-black text-white flex items-center justify-center gap-2">
+          🔥 Top 5 Cao Thủ Dẫn Đầu
+        </h3>
+      </div>
+
+      <!-- Ticker thông báo sự kiện Gold Quest & Boss Battle -->
+      <div id="gameEventTicker" class="hidden w-full max-w-3xl bg-amber-500/20 border border-amber-500/40 rounded-2xl p-3 text-center text-amber-300 font-bold text-sm">
+        ⚡ Cập nhật diễn biến trận đấu thời gian thực...
+      </div>
+
+      <!-- Danh sách Top 5 -->
+      <div id="leaderboardList" class="w-full max-w-3xl space-y-3"></div>
+
+      <div class="pt-4">
+        <button id="btnNextQuestion" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 font-black text-xl shadow-xl shadow-emerald-500/30 transition transform hover:scale-105">
+          CÂU HỎI TIẾP THEO ⏩
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 6: VINH DANH CHUNG CUỘC (PODIUM) & BÁO CÁO GIÁO VIÊN -->
+    <section id="viewPodium" class="hidden flex-col items-center justify-center space-y-8 py-4">
+      <div class="text-center space-y-2">
+        <span class="text-sm font-bold text-yellow-400 uppercase tracking-widest">KẾT QUẢ CHUNG CUỘC</span>
+        <h2 class="text-4xl sm:text-5xl font-black text-white">
+          🎉 VINH DANH CHIẾN THẮNG 🎉
+        </h2>
+      </div>
+
+      <!-- Bục Podium 3D -->
+      <div class="flex items-end justify-center gap-4 sm:gap-8 w-full max-w-3xl h-72 pt-8">
+        <!-- Hạng 2 -->
+        <div id="podiumRank2" class="flex-1 flex flex-col items-center">
+          <div class="text-4xl sm:text-5xl mb-2" id="p2Avatar">🥈</div>
+          <span id="p2Name" class="font-bold text-sm sm:text-base text-gray-200 truncate max-w-[120px]">Á quân</span>
+          <span id="p2Score" class="text-xs text-yellow-400 font-bold mb-2">0 pts</span>
+          <div class="w-full podium-2 h-40 rounded-t-2xl flex items-center justify-center font-black text-3xl sm:text-4xl text-black/50">
+            2
+          </div>
+        </div>
+
+        <!-- Hạng 1 -->
+        <div id="podiumRank1" class="flex-1 flex flex-col items-center">
+          <div class="text-5xl sm:text-7xl mb-2 transform scale-110" id="p1Avatar">👑</div>
+          <span id="p1Name" class="font-extrabold text-base sm:text-lg text-yellow-300 truncate max-w-[140px]">Quán quân</span>
+          <span id="p1Score" class="text-sm text-yellow-400 font-black mb-2">0 pts</span>
+          <div class="w-full podium-1 h-56 rounded-t-2xl flex items-center justify-center font-black text-4xl sm:text-5xl text-black/60 shadow-2xl">
+            1
+          </div>
+        </div>
+
+        <!-- Hạng 3 -->
+        <div id="podiumRank3" class="flex-1 flex flex-col items-center">
+          <div class="text-4xl sm:text-5xl mb-2" id="p3Avatar">🥉</div>
+          <span id="p3Name" class="font-bold text-sm sm:text-base text-gray-200 truncate max-w-[120px]">Hạng 3</span>
+          <span id="p3Score" class="text-xs text-yellow-400 font-bold mb-2">0 pts</span>
+          <div class="w-full podium-3 h-28 rounded-t-2xl flex items-center justify-center font-black text-3xl sm:text-4xl text-black/50">
+            3
+          </div>
+        </div>
+      </div>
+
+      <!-- BÁO CÁO PHÂN TÍCH CHO GIÁO VIÊN (TEACHER INSIGHTS) -->
+      <div class="w-full max-w-3xl bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md space-y-4 text-left">
+        <h4 class="text-base font-extrabold text-white flex items-center gap-2">
+          <span>📊</span> Phân Tích Độ Hiểu Bài Của Lớp (Để Thầy/Cô Nhận Xét Đầu Giờ):
+        </h4>
+        <div id="teacherAnalyticsList" class="space-y-2 max-h-48 overflow-y-auto">
+          <!-- Render tỉ lệ % trả lời đúng từng câu -->
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button id="btnPlayAgain" class="px-8 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-base transition">
+          🔄 Quay Lại Trang Chủ / Tạo Trò Chơi Mới
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: TỰ SOẠN CÂU HỎI MỚI (QUIZ CREATOR STUDIO)      -->
+  <!-- ======================================================== -->
+  <div id="creatorModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-emerald-500/40 w-full max-w-3xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div>
+          <h3 class="text-xl font-black text-white flex items-center gap-2">
+            <span>✍️</span> Soạn Thảo Bộ Câu Hỏi Mới
+          </h3>
+          <p class="text-xs text-gray-400">Tự nhập nội dung và tích chọn phương án là đáp án chính xác.</p>
+        </div>
+        <button id="btnCloseCreatorModal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4 overflow-y-auto flex-1 pr-2">
+        <!-- Tên bộ đề & Thể loại -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Tiêu đề bộ đề:</label>
+            <input type="text" id="manualQuizTitle" placeholder="Ví dụ: Khởi động Toán 5 - Phép nhân"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Thể loại / Môn học:</label>
+            <input type="text" id="manualQuizCategory" placeholder="Ví dụ: Toán Học, Tiếng Anh, Lịch Sử..."
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 text-sm">
+          </div>
+        </div>
+
+        <!-- Danh sách câu hỏi đang soạn -->
+        <div id="manualQuestionsContainer" class="space-y-4">
+          <!-- Form mẫu câu 1 -->
+        </div>
+
+        <button id="btnAddQuestionItem" class="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 border-2 border-dashed border-white/20 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition">
+          <span>➕</span> Thêm Một Câu Hỏi Nữa
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+        <button id="btnCancelCreator" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-sm">
+          Hủy
+        </button>
+        <button id="btnSaveManualQuiz" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-black text-sm shadow-lg shadow-emerald-600/30">
+          LƯU BỘ ĐỀ NÀY 💾
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: TẢI CÂU HỎI LÊN (FILE / TEXT BATCH IMPORT)      -->
+  <!-- ======================================================== -->
+  <div id="importModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-blue-500/40 w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div>
+          <h3 class="text-xl font-black text-white flex items-center gap-2">
+            <span>📥</span> Tải Lên Hàng Loạt Câu Hỏi
+          </h3>
+          <p class="text-xs text-gray-400">Dán danh sách câu hỏi theo mẫu hoặc tải file văn bản/csv</p>
+        </div>
+        <button id="btnCloseImportModal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Tên bộ đề:</label>
+          <input type="text" id="importQuizTitle" placeholder="Ví dụ: Đề Tải Lên Từ File SGK" 
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 text-sm">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-gray-300 uppercase">Dán nội dung câu hỏi:</label>
+            <span class="text-[11px] text-blue-300">Đánh dấu <b>*</b> ở đáp án đúng</span>
+          </div>
+          <textarea id="importRawText" rows="6" placeholder="Định dạng mỗi dòng một câu:
+Thủ đô của Việt Nam là gì? | Đà Nẵng | Hà Nội* | TP. Hồ Chí Minh | Hải Phòng
+25 x 4 bằng bao nhiêu? | 100* | 125 | 150 | 200"
+            class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500 font-mono text-xs"></textarea>
+        </div>
+
+        <div class="p-3 bg-blue-950/40 border border-blue-500/30 rounded-xl text-xs text-gray-300 space-y-1">
+          <p class="font-bold text-blue-300">💡 Hướng dẫn định dạng cực nhanh:</p>
+          <p>Mỗi câu trên một dòng, ngăn cách bằng dấu gạch đứng <code class="text-yellow-300">|</code>. Đặt dấu <code class="text-yellow-300">*</code> cạnh phương án chính xác!</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+        <button id="btnCancelImport" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-sm">
+          Hủy
+        </button>
+        <button id="btnSubmitImport" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-black text-sm shadow-lg shadow-blue-600/30">
+          NHẬN DIỆN & TẢI LÊN 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: AI TẠO ĐỀ TỰ ĐỘNG                               -->
+  <!-- ======================================================== -->
+  <div id="aiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-purple-500/40 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-xl font-black text-white flex items-center gap-2">
+          <span>✨</span> AI Tạo Đề Khởi Động Tự Động
+        </h3>
+        <button id="btnCloseAiModal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Chủ đề bài học hoặc từ khóa:</label>
+          <input type="text" id="aiTopicInput" placeholder="Ví dụ: Đố vui khởi động lớp 6, Toán tính nhanh..." 
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Hoặc dán đoạn văn bản SGK / Bài đọc:</label>
+          <textarea id="aiTextInput" rows="3" placeholder="Dán nội dung bài học vào đây, AI sẽ tự trích xuất câu hỏi..."
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 text-sm"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Số lượng câu:</label>
+            <select id="aiCountSelect" class="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm">
+              <option value="3">3 câu (Khởi động 3p)</option>
+              <option value="5" selected>5 câu (Khuyên dùng 5p)</option>
+              <option value="8">8 câu</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Độ khó:</label>
+            <select id="aiDiffSelect" class="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm">
+              <option value="Dễ">Dễ & Vui vẻ</option>
+              <option value="Vừa phải" selected>Vừa phải</option>
+              <option value="Thử thách">Thử thách tư duy</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+        <button id="btnCancelAi" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-sm">
+          Hủy
+        </button>
+        <button id="btnGenerateAiSubmit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 font-black text-sm shadow-lg shadow-purple-500/30 flex items-center gap-2">
+          <span id="aiBtnSpinner" class="hidden animate-spin">⏳</span>
+          <span id="aiBtnText">Tạo Đề Ngay ⚡</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/sound-engine.js"></script>
+  <script src="/js/battle-fx.js"></script>
+  <script src="/js/host.js"></script>
+</body>
+</html>

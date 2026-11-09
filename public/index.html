@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduQuest – Học Viện Phiêu Lưu | Game RPG 2D Giáo Dục Đỉnh Cao</title>
+  
+  <!-- Favicon / Meta -->
+  <meta name="description" content="EduQuest: Nền tảng học tập kết hợp trò chơi nhập vai RPG 2D thần thoại. Học sinh chiến đấu tiêu diệt quái vật bằng kiến thức, vượt 10 ải bản đồ hoặc chinh phục hành trình 30 câu hỏi tùy chỉnh!">
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Cinzel:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Base RPG CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/eduquest-auth.js"></script>
+
+  <style>
+    :root {
+      --gold-primary: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.5);
+      --magic-purple: #9333ea;
+      --emerald-green: #10b981;
+      --ruby-red: #ef4444;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
+      background-color: #0b0518;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(88, 28, 135, 0.45) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 35%, rgba(180, 83, 9, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 15% 65%, rgba(13, 148, 136, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(15, 23, 42, 0.95) 0%, #06020e 100%);
+      background-attachment: fixed;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+
+    .font-fantasy {
+      font-family: 'Cinzel', serif;
+    }
+
+    .font-hero {
+      font-family: 'Baloo 2', cursive, sans-serif;
+    }
+
+    /* Magical text glow */
+    .text-glow-gold {
+      text-shadow: 0 0 16px rgba(245, 158, 11, 0.7), 0 2px 4px rgba(0, 0, 0, 0.9);
+    }
+    .text-glow-purple {
+      text-shadow: 0 0 16px rgba(168, 85, 247, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9);
+    }
+    .text-glow-emerald {
+      text-shadow: 0 0 16px rgba(16, 185, 129, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9);
+    }
+
+    /* 3D Golden Hero Button */
+    .btn-fantasy-gold {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 50%, #b45309 100%);
+      border: 2px solid #fef08a;
+      box-shadow: 
+        0 6px 0 #78350f,
+        0 12px 25px rgba(245, 158, 11, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.6);
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-fantasy-gold:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 
+        0 9px 0 #78350f,
+        0 18px 32px rgba(245, 158, 11, 0.7),
+        inset 0 2px 6px rgba(255, 255, 255, 0.8);
+      filter: brightness(1.1);
+    }
+    .btn-fantasy-gold:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #78350f;
+    }
+
+    /* 3D Purple Rune Button */
+    .btn-fantasy-purple {
+      background: linear-gradient(180deg, #a855f7 0%, #7e22ce 50%, #581c87 100%);
+      border: 2px solid #e9d5ff;
+      box-shadow: 
+        0 6px 0 #3b0764,
+        0 12px 25px rgba(168, 85, 247, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+      transition: all 0.15s ease;
+    }
+    .btn-fantasy-purple:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 9px 0 #3b0764, 0 18px 30px rgba(168, 85, 247, 0.6);
+      filter: brightness(1.1);
+    }
+    .btn-fantasy-purple:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #3b0764;
+    }
+
+    /* Gilded Card Frame */
+    .gilded-card {
+      background: radial-gradient(circle at 50% 10%, rgba(38, 24, 58, 0.95) 0%, rgba(18, 10, 30, 0.98) 100%);
+      border: 2px solid rgba(245, 158, 11, 0.4);
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.7),
+        inset 0 0 30px rgba(245, 158, 11, 0.08);
+      border-radius: 24px;
+      position: relative;
+    }
+    .gilded-card::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Floating magical spark particles */
+    @keyframes floatParticle {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      30% { opacity: 0.8; }
+      100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+    }
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fbbf24;
+      box-shadow: 0 0 10px #fbbf24, 0 0 20px #f59e0b;
+      pointer-events: none;
+      animation: floatParticle 4s infinite linear;
+    }
+
+    /* Gentle floating hero breathe */
+    @keyframes heroFloatCinematic {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-12px) scale(1.02); }
+    }
+    .hero-cinematic {
+      animation: heroFloatCinematic 3.5s infinite ease-in-out;
+    }
+    .hero-cinematic-delay-1 {
+      animation: heroFloatCinematic 3.2s infinite ease-in-out 0.6s;
+    }
+    .hero-cinematic-delay-2 {
+      animation: heroFloatCinematic 3.8s infinite ease-in-out 1.2s;
+    }
+
+    /* Floating treasure glow */
+    @keyframes chestPulse {
+      0%, 100% { filter: drop-shadow(0 10px 20px rgba(245, 158, 11, 0.5)); transform: scale(1); }
+      50% { filter: drop-shadow(0 16px 32px rgba(245, 158, 11, 0.9)); transform: scale(1.04); }
+    }
+    .chest-glow {
+      animation: chestPulse 2.4s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+  <!-- ======================================================== -->
+  <!-- 1. STICKY TOP NAVIGATION BAR                             -->
+  <!-- ======================================================== -->
+  <header id="top" class="sticky top-0 z-50 w-full bg-[#0d051e]/85 backdrop-blur-md border-b border-amber-500/25 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo & Brand -->
+      <a href="#top" class="flex items-center gap-3.5 group">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-[2px] shadow-lg shadow-amber-500/30 group-hover:scale-105 transition">
+          <div class="w-full h-full bg-[#160a2b] rounded-2xl flex items-center justify-center">
+            <img src="/assets/items/sword.png" alt="EduQuest Sword" class="w-7 h-7 object-contain drop-shadow" />
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-black font-fantasy tracking-wider bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 bg-clip-text text-transparent drop-shadow">
+              EduQuest
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              RPG 2D
+            </span>
+          </div>
+          <p class="text-[11px] font-semibold text-purple-200 tracking-wide">
+            Học Viện Phiêu Lưu • Tri Thức & Chiến Trận
+          </p>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden lg:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-gray-300">
+        <a href="#how-it-works" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>📜</span> Cách Chơi
+        </a>
+        <a href="#preview" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>⚔️</span> Trải Nghiệm Đấu
+        </a>
+        <a href="#modes" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>🎮</span> 2 Chế Độ Chơi
+        </a>
+        <a href="#world" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>🗺️</span> Thế Giới
+        </a>
+        <a href="#heroes" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>🛡️</span> Anh Hùng
+        </a>
+        <a href="#rewards" class="hover:text-amber-400 transition flex items-center gap-1.5">
+          <span>💎</span> Phần Thưởng
+        </a>
+        <a href="#teachers" class="hover:text-amber-400 transition flex items-center gap-1.5 text-purple-300">
+          <span>✏️</span> Dành Cho Thầy Cô
+        </a>
+      </nav>
+
+      <!-- Desktop Action Buttons -->
+      <div class="hidden sm:flex items-center gap-3">
+        <!-- Sound Effect Toggle Button -->
+        <button id="soundToggleBtn" onclick="toggleMute()" title="Bật/Tắt Âm Thanh" class="w-10 h-10 rounded-xl bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/40 text-amber-300 flex items-center justify-center text-lg transition">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+        <!-- User Auth Status Badge / Login Button -->
+        <div id="indexAuthContainer" class="flex items-center">
+          <a href="/rpg.html" class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 font-bold text-xs flex items-center gap-1.5 transition">
+            <span>👤</span> <span>Đăng Nhập</span>
+          </a>
+        </div>
+
+        <!-- Teacher Creator Studio Button -->
+        <a href="/creator.html" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-amber-400/40 text-amber-200 font-bold text-xs flex items-center gap-2 transition hover:scale-105">
+          <span>✏️</span> Soạn Bộ Đề
+        </a>
+
+        <!-- Play RPG Button -->
+        <a href="/rpg.html" onclick="EduAudio.playClick()" class="btn-fantasy-gold px-5 py-2.5 rounded-xl font-black font-fantasy text-xs text-white uppercase tracking-wider flex items-center gap-2">
+          <span>⚔️</span> Chơi Ngay
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger Button -->
+      <button onclick="toggleMobileMenu()" class="lg:hidden p-2.5 rounded-xl bg-purple-900/50 border border-purple-400/30 text-amber-300 text-xl">
+        ☰
+      </button>
+
+    </div>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileMenu" class="hidden lg:hidden px-6 py-5 bg-[#12082b] border-b border-amber-500/30 space-y-4">
+      <div class="grid grid-cols-2 gap-3 text-xs font-bold">
+        <a href="#how-it-works" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">📜 Cách Chơi</a>
+        <a href="#preview" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">⚔️ Thử Trận Đấu</a>
+        <a href="#modes" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">🎮 2 Chế Độ Chơi</a>
+        <a href="#world" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">🗺️ Bản Đồ Thế Giới</a>
+        <a href="#heroes" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">🛡️ 3 Anh Hùng</a>
+        <a href="#teachers" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-2">✏️ Thầy Cô Tạo Đề</a>
+      </div>
+      <div class="pt-2 flex flex-col gap-2.5">
+        <a href="/rpg.html" class="w-full py-3 text-center btn-fantasy-gold rounded-xl font-black text-sm text-white font-fantasy">
+          ⚔️ BẮT ĐẦU VÀO GAME RPG
+        </a>
+        <div class="grid grid-cols-2 gap-2">
+          <a href="/creator.html" class="py-2.5 text-center rounded-xl bg-purple-950 border border-purple-400/50 text-xs font-bold text-amber-200">
+            ✏️ Soạn Bộ 30 Câu
+          </a>
+          <a href="/host.html" class="py-2.5 text-center rounded-xl bg-purple-950 border border-purple-400/50 text-xs font-bold text-pink-200">
+            💻 Host Lớp Học
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ======================================================== -->
+  <!-- 2. SECTION 1: HERO SECTION (CINEMATIC ENTRANCE)         -->
+  <!-- ======================================================== -->
+  <section class="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden">
+    <!-- Floating background decorative mana sparks -->
+    <div class="particle" style="top: 25%; left: 12%; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 45%; left: 88%; animation-delay: 1.5s;"></div>
+    <div class="particle" style="top: 65%; left: 30%; animation-delay: 2.8s;"></div>
+    <div class="particle" style="top: 35%; left: 70%; animation-delay: 0.9s;"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        
+        <!-- Left: Catchy Headline & Value Proposition -->
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          
+          <!-- Category Tag -->
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-pink-500/20 border border-amber-400/40 text-amber-300 text-xs font-black tracking-widest uppercase shadow-lg">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            <span>⭐ GAME NHẬP VAI RPG 2D GIÁO DỤC ĐẦU TIÊN TẠI VIỆT NAM</span>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black font-fantasy leading-[1.15] tracking-tight">
+            <span class="text-white block">HỌC TẬP LÀ MỘT</span>
+            <span class="bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 bg-clip-text text-transparent text-glow-gold block mt-1">
+              CUỘC PHIÊU LƯU!
+            </span>
+          </h1>
+
+          <!-- Compelling Subtitle -->
+          <p class="text-base sm:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            Biến mỗi bài tập trắc nghiệm khô khan thành <strong>một chiêu thức phép thuật dũng mãnh</strong>! Nhập vai Chiến Binh, Pháp Sư hay Cung Thủ, tiêu diệt quái vật, vượt 10 ải thần thoại và chinh phục hành trình 30 câu hỏi do thầy cô tự biên soạn.
+          </p>
+
+          <!-- 3 Hero Value Props / Badges -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-left">
+            <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+              <div class="text-lg">🛡️</div>
+              <div class="text-xs font-black text-white mt-1">3 Lớp Tướng</div>
+              <div class="text-[11px] text-gray-400">Chiến, Pháp, Cung</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+              <div class="text-lg">🐾</div>
+              <div class="text-xs font-black text-white mt-1">4 Thú Cưng</div>
+              <div class="text-[11px] text-gray-400">Rồng, Cáo, Mèo, Sói</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+              <div class="text-lg">🗺️</div>
+              <div class="text-xs font-black text-white mt-1">4 Bản Đồ</div>
+              <div class="text-[11px] text-gray-400">Rừng, Động, Lâu Đài</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+              <div class="text-lg">✏️</div>
+              <div class="text-xs font-black text-white mt-1">Tự Soạn Đề</div>
+              <div class="text-[11px] text-gray-400">30 Câu tùy ý</div>
+            </div>
+          </div>
+
+          <!-- CTA Buttons -->
+          <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+            <!-- Primary Action -->
+            <a href="/rpg.html" onclick="EduAudio.playClick()" class="w-full sm:w-auto btn-fantasy-gold px-8 py-4 rounded-2xl font-black font-fantasy text-sm text-white uppercase tracking-wider flex items-center justify-center gap-3 group">
+              <img src="/assets/items/sword.png" alt="Sword" class="w-6 h-6 object-contain group-hover:rotate-12 transition transform" />
+              <span>BẮT ĐẦU PHIÊU LƯU NGAY</span>
+            </a>
+
+            <!-- Interactive Preview CTA -->
+            <a href="#preview" onclick="EduAudio.playClick()" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 text-purple-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition hover:scale-105">
+              <span>🎯</span> Thử Đánh Quái Ngay
+            </a>
+
+            <!-- Teacher Creator CTA -->
+            <a href="/creator.html" onclick="EduAudio.playClick()" class="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/15 border border-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition hover:scale-105">
+              <span>✏️</span> Soạn Bộ 30 Câu
+            </a>
+          </div>
+
+          <!-- Trust & Safe Badge -->
+          <div class="pt-2 flex items-center justify-center lg:justify-start gap-5 text-xs text-gray-400">
+            <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> 100% Miễn Phí</span>
+            <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Không Cần Cài Đặt</span>
+            <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> An Toàn Cho Học Sinh</span>
+          </div>
+
+        </div>
+
+        <!-- Right: Dynamic 3D Chibi Hero Stage Art -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
+          
+          <!-- Arcane Magic Circle Background -->
+          <div class="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-tr from-purple-600/30 via-amber-500/20 to-emerald-500/30 blur-2xl pointer-events-none"></div>
+
+          <!-- Hero Chibi Trio Composition -->
+          <div class="relative w-full max-w-md h-96 flex items-end justify-center">
+            
+            <!-- Mage on Left -->
+            <div class="absolute left-2 sm:left-4 bottom-12 z-10 hero-cinematic-delay-1 flex flex-col items-center group cursor-pointer" onclick="selectHeroTab('mage')">
+              <div class="w-28 sm:w-32 transition transform group-hover:scale-110">
+                <img src="/assets/heroes/mage.png" alt="Pháp Sư Chibi" class="w-full h-auto drop-shadow-2xl" />
+              </div>
+              <div class="entity-shadow w-24"></div>
+              <span class="mt-1 text-[11px] font-black uppercase tracking-wider bg-purple-900/80 px-2 py-0.5 rounded-full border border-purple-400/40 text-purple-200">
+                Pháp Sư
+              </span>
+            </div>
+
+            <!-- Warrior in Center (Main Star) -->
+            <div class="z-20 hero-cinematic flex flex-col items-center group cursor-pointer" onclick="selectHeroTab('warrior')">
+              <div class="w-40 sm:w-48 transition transform group-hover:scale-110">
+                <img src="/assets/heroes/warrior.png" alt="Chiến Binh Chibi" class="w-full h-auto drop-shadow-[0_15px_30px_rgba(245,158,11,0.6)]" />
+              </div>
+              <div class="entity-shadow w-36"></div>
+              <span class="mt-1 text-xs font-black uppercase tracking-wider bg-amber-600/90 px-3 py-1 rounded-full border border-amber-300 text-white shadow-lg">
+                Chiến Binh
+              </span>
+            </div>
+
+            <!-- Archer on Right -->
+            <div class="absolute right-2 sm:right-4 bottom-12 z-10 hero-cinematic-delay-2 flex flex-col items-center group cursor-pointer" onclick="selectHeroTab('archer')">
+              <div class="w-28 sm:w-32 transition transform group-hover:scale-110">
+                <img src="/assets/heroes/archer.png" alt="Cung Thủ Chibi" class="w-full h-auto drop-shadow-2xl" />
+              </div>
+              <div class="entity-shadow w-24"></div>
+              <span class="mt-1 text-[11px] font-black uppercase tracking-wider bg-emerald-900/80 px-2 py-0.5 rounded-full border border-emerald-400/40 text-emerald-200">
+                Cung Thủ
+              </span>
+            </div>
+
+            <!-- Pet Dragon Floating on Shoulder -->
+            <div class="absolute -top-4 right-10 z-30 animate-bounce" style="animation-duration: 2.8s;">
+              <div class="w-16 h-16 p-1.5 rounded-2xl bg-amber-500/20 border border-amber-400/50 backdrop-blur-md shadow-lg">
+                <img src="/assets/pets/pet_dragon.png" alt="Rồng Con" class="w-full h-full object-contain" />
+              </div>
+              <span class="text-[9px] font-black bg-black/80 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/30 block text-center mt-1">
+                Long Con
+              </span>
+            </div>
+
+            <!-- Enemy Slime Peeking playfully -->
+            <div class="absolute bottom-2 -right-4 z-20 animate-pulse">
+              <img src="/assets/monsters/slime.png" alt="Quái Slime" class="w-14 h-auto drop-shadow-lg" />
+            </div>
+
+          </div>
+
+          <!-- Hero Selection Hint Banner -->
+          <div class="mt-4 p-3 rounded-2xl bg-black/40 border border-amber-500/30 backdrop-blur-sm text-center">
+            <p class="text-xs text-amber-300 font-bold flex items-center justify-center gap-1.5">
+              <span>💡</span> Bấm vào từng anh hùng để xem bộ kỹ năng chiến đấu độc quyền!
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 3. SECTION 2: HOW EDUQUEST WORKS (BIẾN KIẾN THỨC)        -->
+  <!-- ======================================================== -->
+  <section id="how-it-works" class="py-20 relative bg-gradient-to-b from-transparent via-[#14082c]/80 to-transparent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-widest">
+          ⚔️ CƠ CHẾ VẬN HÀNH
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Biến Kiến Thức Thành Sức Mạnh Phép Thuật
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          Chỉ với 3 bước đơn giản, mỗi buổi học sẽ biến thành một trận quyết đấu sử thi đầy hào hứng.
+        </p>
+      </div>
+
+      <!-- 3 Journey Steps Connected with Ornate Road Path -->
+      <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        
+        <!-- Step 1 -->
+        <div class="gilded-card p-8 text-center flex flex-col items-center group hover:-translate-y-2 transition duration-300">
+          <div class="w-10 h-10 rounded-full bg-amber-500 text-black font-black font-fantasy flex items-center justify-center text-lg shadow-lg mb-5">
+            1
+          </div>
+          <div class="w-24 h-24 rounded-3xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center p-4 mb-6 shadow-inner group-hover:scale-110 transition">
+            <img src="/assets/items/quest_scroll.png" alt="Cuộn Giấy Phép" class="w-full h-full object-contain drop-shadow" />
+          </div>
+          <h3 class="text-xl font-black text-white font-hero">Chọn Bộ Đề & Chiến Trường</h3>
+          <p class="text-xs text-gray-300 leading-relaxed mt-2.5">
+            Lựa chọn môn học bạn muốn rèn luyện: Toán, Văn, Tiếng Anh, Khoa Học hoặc bộ đề 30 câu do thầy cô tự biên soạn. Chọn 1 trong 4 bản đồ thần thoại.
+          </p>
+          <div class="mt-4 pt-4 border-t border-white/10 w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-400">
+            <span>✓ Hỗ trợ công thức KaTeX</span>
+            <span>✓ Tùy chọn 4 bản đồ</span>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="gilded-card p-8 text-center flex flex-col items-center group hover:-translate-y-2 transition duration-300 border-amber-400/60 shadow-amber-500/20">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black font-fantasy flex items-center justify-center text-lg shadow-lg mb-5">
+            2
+          </div>
+          <div class="w-24 h-24 rounded-3xl bg-rose-500/10 border border-rose-400/30 flex items-center justify-center p-4 mb-6 shadow-inner group-hover:scale-110 transition">
+            <img src="/assets/items/sword.png" alt="Thanh Kiếm Sát Thương" class="w-full h-full object-contain drop-shadow" />
+          </div>
+          <h3 class="text-xl font-black text-white font-hero">Chiến Đấu Bằng Trí Tuệ</h3>
+          <p class="text-xs text-gray-300 leading-relaxed mt-2.5">
+            Đọc câu hỏi và chọn đáp án đúng. Mỗi câu trả lời chính xác sẽ kích hoạt đòn đánh (Chém Kiếm, Hỏa Cầu, Mưa Tên) trừ máu quái vật và Boss.
+          </p>
+          <div class="mt-4 pt-4 border-t border-white/10 w-full flex items-center justify-center gap-2 text-[11px] font-bold text-rose-400">
+            <span>✓ Hiệu ứng đòn đánh sinh động</span>
+            <span>✓ Combo nhân đôi điểm</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="gilded-card p-8 text-center flex flex-col items-center group hover:-translate-y-2 transition duration-300">
+          <div class="w-10 h-10 rounded-full bg-emerald-500 text-black font-black font-fantasy flex items-center justify-center text-lg shadow-lg mb-5">
+            3
+          </div>
+          <div class="w-24 h-24 rounded-3xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center p-4 mb-6 shadow-inner group-hover:scale-110 transition">
+            <img src="/assets/items/chest_open.png" alt="Rương Kho Báu Mở" class="w-full h-full object-contain drop-shadow" />
+          </div>
+          <h3 class="text-xl font-black text-white font-hero">Mở Rương & Nâng Cấp</h3>
+          <p class="text-xs text-gray-300 leading-relaxed mt-2.5">
+            Đánh bại quái vật để nhận Vàng, điểm kinh nghiệm EXP, mở khóa rương kho báu ngẫu nhiên, nâng cấp vũ khí hoàng kim và tiến hóa thú cưng.
+          </p>
+          <div class="mt-4 pt-4 border-t border-white/10 w-full flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-400">
+            <span>✓ 100% Tích lũy bằng học tập</span>
+            <span>✓ Không pay-to-win</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 4. SECTION 3: INTERACTIVE GAMEPLAY PREVIEW (MINI BATTLE) -->
+  <!-- ======================================================== -->
+  <section id="preview" class="py-20 relative">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 mb-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs font-black uppercase tracking-widest">
+          🎮 TRẢI NGHIỆM TRỰC TIẾP
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Trả Lời Đúng – Tung Đòn Tấn Công Ngay!
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300 max-w-2xl mx-auto">
+          Hãy bấm thử đáp án chính xác bên dưới để chứng kiến hiệp sĩ của bạn xuất chiêu chém Quái Slime ngay trên màn hình!
+        </p>
+      </div>
+
+      <!-- Live Battle Simulator Widget Container -->
+      <div class="rounded-3xl border-4 border-amber-500/60 bg-[#170a2c] shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden relative">
+        
+        <!-- Battle Top Header Bar -->
+        <div class="px-6 py-3.5 bg-black/60 border-b border-amber-500/30 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs font-black text-amber-300">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>ẢI 1: RỪNG TRI THỨC (BẢN THỬ NGHIỆM)</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-gray-300">
+            <span>⭐ Điểm: <strong id="previewScore" class="text-amber-400 font-bold">120</strong></span>
+            <span>🔥 Combo: <strong id="previewCombo" class="text-rose-400 font-bold">x1</strong></span>
+          </div>
+        </div>
+
+        <!-- Battlefield Arena Stage (Hero vs Monster) -->
+        <div class="relative h-72 sm:h-80 w-full overflow-hidden flex items-end justify-between px-8 sm:px-16 pb-8" 
+             style="background: linear-gradient(180deg, rgba(23, 10, 44, 0.4) 0%, rgba(10, 4, 20, 0.95) 100%), url('/assets/battle-arena-bg.jpg') center/cover no-repeat;">
+          
+          <!-- Floating Damage Layer Container -->
+          <div id="damageLayer" class="absolute inset-0 pointer-events-none z-40"></div>
+
+          <!-- Hero Left Side -->
+          <div class="relative z-20 flex flex-col items-center">
+            <!-- Hero Stats Box -->
+            <div class="mb-2 p-2 rounded-xl bg-black/75 border border-amber-400/40 text-left min-w-[130px] shadow-lg">
+              <div class="flex justify-between items-center text-[11px] font-black">
+                <span class="text-amber-300">DŨNG SĨ</span>
+                <span id="heroHpText" class="text-emerald-400">130/130</span>
+              </div>
+              <!-- HP Bar -->
+              <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden mt-1 border border-white/10">
+                <div id="heroHpBar" class="h-full bg-gradient-to-r from-emerald-500 to-green-400 w-full transition-all duration-300"></div>
+              </div>
+              <!-- MP Bar -->
+              <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mt-1 border border-white/10">
+                <div id="heroMpBar" class="h-full bg-gradient-to-r from-blue-500 to-purple-400 w-3/4"></div>
+              </div>
+            </div>
+
+            <!-- Hero Sprite with Weapon -->
+            <div id="previewHero" class="relative hero-sprite-idle transition transform">
+              <img src="/assets/heroes/warrior.png" alt="Chiến Binh" class="w-28 sm:w-36 h-auto drop-shadow-[0_10px_20px_rgba(245,158,11,0.5)]" />
+              <!-- Mini Pet Beside -->
+              <img src="/assets/pets/pet_dragon.png" alt="Pet Dragon" class="absolute -bottom-1 -left-4 w-10 h-10 object-contain drop-shadow" />
+            </div>
+            <div class="entity-shadow w-28 mt-[-10px]"></div>
+          </div>
+
+          <!-- Battle Slash Effect Overlay Area (Center/Right) -->
+          <div id="slashEffectArea" class="absolute inset-0 flex items-center justify-center pointer-events-none z-30"></div>
+
+          <!-- Monster Right Side -->
+          <div class="relative z-20 flex flex-col items-center">
+            <!-- Monster Stats Box -->
+            <div class="mb-2 p-2 rounded-xl bg-black/75 border border-rose-400/40 text-left min-w-[130px] shadow-lg">
+              <div class="flex justify-between items-center text-[11px] font-black">
+                <span class="text-rose-300">SLIME RỪNG XANH</span>
+                <span id="monsterHpText" class="text-rose-400">100/100</span>
+              </div>
+              <!-- HP Bar -->
+              <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden mt-1 border border-white/10">
+                <div id="monsterHpBar" class="h-full bg-gradient-to-r from-rose-600 to-amber-500 w-full transition-all duration-300"></div>
+              </div>
+            </div>
+
+            <!-- Monster Sprite -->
+            <div id="previewMonster" class="relative monster-sprite-idle transition transform">
+              <img src="/assets/monsters/slime.png" alt="Quái Slime" class="w-24 sm:w-32 h-auto drop-shadow-[0_10px_20px_rgba(239,68,68,0.5)]" />
+            </div>
+            <div class="entity-shadow w-24 mt-[-8px]"></div>
+          </div>
+
+        </div>
+
+        <!-- Question & 4 Jewel Answer Buttons Area -->
+        <div class="p-6 bg-[#1a0e33] border-t border-amber-500/40 space-y-4">
+          
+          <!-- Question Header & Question Switcher -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-amber-500 text-black text-xs font-black font-fantasy">
+                CÂU HỎI HỌC TẬP
+              </span>
+              <span id="questionCategory" class="text-xs text-amber-200 font-bold">
+                Toán Lớp 3 - Bảng Cửu Chương
+              </span>
+            </div>
+            
+            <!-- Question Selector Tabs -->
+            <div class="flex items-center gap-1.5 text-[11px] font-bold">
+              <span class="text-gray-400">Đổi câu hỏi:</span>
+              <button onclick="loadQuestion(0)" class="q-tab px-2 py-0.5 rounded bg-amber-500 text-black font-bold">Toán 7×8</button>
+              <button onclick="loadQuestion(1)" class="q-tab px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20">Địa Lý</button>
+              <button onclick="loadQuestion(2)" class="q-tab px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20">Khoa Học</button>
+            </div>
+          </div>
+
+          <!-- Parchment Question Text Box -->
+          <div class="fantasy-parchment-box p-4 sm:p-5 text-center">
+            <div class="corner-filigree-tl"></div>
+            <div class="corner-filigree-tr"></div>
+            <div class="corner-filigree-bl"></div>
+            <div class="corner-filigree-br"></div>
+            <h3 id="questionTitle" class="text-lg sm:text-xl font-black text-amber-200 tracking-wide">
+              Kết quả của phép tính: 7 × 8 = ?
+            </h3>
+          </div>
+
+          <!-- 4 3D Jewel Buttons (From Reference 04) -->
+          <div id="answerButtonsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+            <!-- Button A -->
+            <button onclick="submitAnswer(0)" class="fantasy-btn-a p-3.5 rounded-2xl text-left flex items-center justify-between text-white font-bold text-sm">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center font-black text-xs">A</span>
+                <span id="btnTextA">54</span>
+              </span>
+              <span class="text-xs opacity-60">🔹</span>
+            </button>
+
+            <!-- Button B (Correct for 7x8=56) -->
+            <button onclick="submitAnswer(1)" class="fantasy-btn-b p-3.5 rounded-2xl text-left flex items-center justify-between text-white font-bold text-sm">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center font-black text-xs">B</span>
+                <span id="btnTextB">56</span>
+              </span>
+              <span class="text-xs opacity-60">🔹</span>
+            </button>
+
+            <!-- Button C -->
+            <button onclick="submitAnswer(2)" class="fantasy-btn-c p-3.5 rounded-2xl text-left flex items-center justify-between text-white font-bold text-sm">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center font-black text-xs">C</span>
+                <span id="btnTextC">64</span>
+              </span>
+              <span class="text-xs opacity-60">🔹</span>
+            </button>
+
+            <!-- Button D -->
+            <button onclick="submitAnswer(3)" class="fantasy-btn-d p-3.5 rounded-2xl text-left flex items-center justify-between text-white font-bold text-sm">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center font-black text-xs">D</span>
+                <span id="btnTextD">48</span>
+              </span>
+              <span class="text-xs opacity-60">🔹</span>
+            </button>
+          </div>
+
+          <!-- Battle Feedback Toast Banner -->
+          <div id="battleFeedback" class="hidden p-3 rounded-xl text-center text-xs font-black transition-all"></div>
+
+          <!-- Victory Modal Banner (Appears on kill) -->
+          <div id="victoryBanner" class="hidden p-5 rounded-2xl bg-gradient-to-r from-amber-950 via-purple-950 to-amber-950 border-2 border-amber-400 text-center space-y-3">
+            <div class="text-3xl">🎉 ⚔️ 🏆</div>
+            <h4 class="text-xl font-black text-amber-300 font-fantasy">
+              CHIẾN THẮNG TUYỆT ĐỐI! SLIME ĐÃ BỊ TIÊU DIỆT!
+            </h4>
+            <p class="text-xs text-gray-300">
+              Bạn nhận được: <strong class="text-amber-400">+50 Vàng</strong>, <strong class="text-purple-300">+120 EXP</strong> và 1 <strong class="text-emerald-400">Rương May Mắn</strong>!
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button onclick="resetPreviewBattle()" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition">
+                🔄 Đấu Lại Quái Mới
+              </button>
+              <a href="/rpg.html" class="btn-fantasy-gold px-6 py-2.5 rounded-xl text-xs font-black text-white font-fantasy uppercase tracking-wider flex items-center gap-2">
+                <span>⚔️</span> VÀO GAME ĐẦY ĐỦ 10 ẢI
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 5. SECTION 4: TWO EPIC GAME MODES (CHỌN CHẾ ĐỘ CHƠI)     -->
+  <!-- ======================================================== -->
+  <section id="modes" class="py-20 relative bg-black/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-widest">
+          🎮 HAI CHẾ ĐỘ PHIÊU LƯU
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Chọn Cuộc Phiêu Lưu Phù Hợp Với Bạn
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          Chơi tự do khám phá bản đồ từng bước, hoặc thử thách lòng dũng cảm với chuỗi 30 câu hỏi liên tục không ngừng nghỉ!
+        </p>
+      </div>
+
+      <!-- Mode Cards Grid -->
+      <div class="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Mode 1: World Map Exploration (10 Ải) -->
+        <div class="gilded-card overflow-hidden group hover:border-amber-400 transition-all duration-300 flex flex-col justify-between">
+          <div class="relative h-60 w-full overflow-hidden">
+            <img src="/assets/world-map.jpg" alt="Bản Đồ Thế Giới EduQuest" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#14082c] via-transparent to-transparent"></div>
+            <div class="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-amber-500/90 text-black font-black font-fantasy text-xs shadow-lg">
+              CHẾ ĐỘ 1: PHIÊU LƯU BẢN ĐỒ
+            </div>
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs font-black text-amber-300">
+              <span class="flex items-center gap-1.5">🗺️ 10 Ải Chiến Trận</span>
+              <span class="flex items-center gap-1.5">👑 Đánh Boss Cuối</span>
+            </div>
+          </div>
+
+          <div class="p-6 sm:p-8 space-y-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-3">
+              <h3 class="text-2xl font-black text-white font-hero">
+                Khám Phá Thế Giới 10 Ải Thần Thoại
+              </h3>
+              <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                Hành trình kinh điển dành cho học sinh tự luyện: Bắt đầu từ Ải 1 (Rừng Khởi Đầu), mở khóa tuần tự các vùng đất bí ẩn, thu thập rương kho báu, đánh bại Boss Khổng Lồ và lưu giữ hành trình anh hùng của riêng bạn.
+              </p>
+              
+              <ul class="space-y-2 text-xs text-gray-300 pt-2">
+                <li class="flex items-center gap-2">
+                  <span class="text-amber-400">✦</span> 10 ải nối tiếp với độ khó tăng dần từ dễ đến chuyên sâu.
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-amber-400">✦</span> Hệ thống lưu tự động điểm kinh nghiệm, trang bị và cấp bậc.
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-amber-400">✦</span> Đạt 3 sao mỗi ải để mở khóa rương thần thoại chứa báu vật quý.
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-6">
+              <a href="/rpg.html?mode=map" class="w-full btn-fantasy-gold py-3.5 rounded-xl font-black font-fantasy text-xs text-white uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg">
+                <span>🧭</span> VÀO PHIÊU LƯU BẢN ĐỒ NGAY
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode 2: 30 Question Journey -->
+        <div class="gilded-card overflow-hidden group hover:border-purple-400 transition-all duration-300 flex flex-col justify-between">
+          <div class="relative h-60 w-full overflow-hidden">
+            <img src="/assets/maps/map_forest.jpg" alt="Hành Trình 30 Câu Hỏi" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#14082c] via-transparent to-transparent"></div>
+            <div class="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-purple-600/90 text-white font-black font-fantasy text-xs shadow-lg">
+              CHẾ ĐỘ 2: HÀNH TRÌNH 30 CÂU
+            </div>
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs font-black text-purple-300">
+              <span class="flex items-center gap-1.5">⚡ 30 Câu Liên Tục</span>
+              <span class="flex items-center gap-1.5">🎯 Bộ Đề Tự Chọn 100%</span>
+            </div>
+          </div>
+
+          <div class="p-6 sm:p-8 space-y-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-3">
+              <h3 class="text-2xl font-black text-white font-hero">
+                Hành Trình Tri Thức – 30 Question Adventure
+              </h3>
+              <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                Chế độ chiến đấu tập trung cao độ qua 30 câu hỏi liên tục. Người chơi được tự do chọn: Bộ câu hỏi học tập, Bản đồ chiến đấu, Nhân vật và Quái vật đối đầu. Không phải quay lại bản đồ sau mỗi câu hỏi!
+              </p>
+              
+              <ul class="space-y-2 text-xs text-gray-300 pt-2">
+                <li class="flex items-center gap-2">
+                  <span class="text-purple-400">✦</span> 30 câu hỏi liên tục với thanh đo tiến độ thời gian thực.
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-purple-400">✦</span> Tùy chọn 4 bản đồ thần thoại: Rừng Xanh, Hang Đá, Lâu Đài, Núi Lửa.
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-purple-400">✦</span> Tự do tải lên hoặc soạn thảo bộ đề 30 câu bất kỳ.
+                </li>
+              </ul>
+            </div>
+
+            <div class="pt-6">
+              <a href="/rpg.html?mode=journey" class="w-full btn-fantasy-purple py-3.5 rounded-xl font-black font-fantasy text-xs text-white uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg">
+                <span>⚡</span> THỬ THÁCH 30 CÂU HỎI NGAY
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Extra Classroom Multiplayer Arena Banner -->
+      <div class="mt-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-purple-950/80 via-black/80 to-pink-950/80 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center sm:text-left">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-[11px] font-black uppercase">
+            💻 ĐẤU TRƯỜNG LỚP HỌC (MULTIPLAYER)
+          </div>
+          <h4 class="text-xl font-black text-white">Bạn Muốn Tổ Chức Trò Chơi Cho Cả Lớp Cùng Tham Gia?</h4>
+          <p class="text-xs text-gray-400">Giáo viên phát mã PIN lên máy chiếu, cả lớp dùng điện thoại trả lời 4 nút màu Kahoot để cùng diệt Boss!</p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <a href="/host.html" class="px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 transition">
+            <span>💻</span> Mở Host Máy Chiếu
+          </a>
+          <a href="/player.html" class="px-5 py-3 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center gap-2 transition">
+            <span>📱</span> Vào Chơi Bằng PIN
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 6. SECTION 5: EXPLORE THE FANTASY WORLD (BẢN ĐỒ)        -->
+  <!-- ======================================================== -->
+  <section id="world" class="py-20 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs font-black uppercase tracking-widest">
+          🗺️ BẢN ĐỒ THẦN THOẠI
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Một Thế Giới Phép Thuật Đang Chờ Bạn Khám Phá
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          Mỗi vùng đất là một vùng tri thức với cảnh sắc tuyệt mỹ, những quái vật độc đáo và thử thách cam go.
+        </p>
+      </div>
+
+      <!-- 4 Map Tabs Switcher -->
+      <div class="mt-12 flex flex-wrap items-center justify-center gap-3">
+        <button onclick="switchWorldMap('forest')" id="tab-map-forest" class="map-tab-btn px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs border border-emerald-300 flex items-center gap-2 shadow-lg transition">
+          🌲 Rừng Tri Thức
+        </button>
+        <button onclick="switchWorldMap('cave')" id="tab-map-cave" class="map-tab-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 flex items-center gap-2 transition">
+          💎 Hang Động Bí Ẩn
+        </button>
+        <button onclick="switchWorldMap('castle')" id="tab-map-castle" class="map-tab-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 flex items-center gap-2 transition">
+          🏰 Lâu Đài Bóng Tối
+        </button>
+        <button onclick="switchWorldMap('volcano')" id="tab-map-volcano" class="map-tab-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 flex items-center gap-2 transition">
+          🌋 Núi Lửa Rồng Thiêng
+        </button>
+      </div>
+
+      <!-- Active World Map Showcase Display Card -->
+      <div class="mt-8 rounded-3xl border-2 border-amber-500/50 bg-[#160a2c] overflow-hidden shadow-2xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12">
+          
+          <!-- Map Image with Atmospheric Overlay -->
+          <div class="lg:col-span-7 relative h-72 sm:h-96 w-full overflow-hidden">
+            <img id="worldMapImg" src="/assets/maps/map_forest.jpg" alt="Rừng Tri Thức" class="w-full h-full object-cover transition-all duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#160a2c] via-transparent to-transparent"></div>
+            
+            <!-- Map Difficulty Stars Badge -->
+            <div class="absolute top-4 left-4 px-3.5 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs font-black backdrop-blur-md flex items-center gap-2">
+              <span class="text-amber-400">ĐỘ KHÓ:</span>
+              <span id="worldMapStars" class="text-amber-300 tracking-widest">★☆☆☆☆</span>
+            </div>
+          </div>
+
+          <!-- Map Info & Featured Monsters -->
+          <div class="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="space-y-1">
+                <span id="worldMapBadge" class="text-xs font-black uppercase text-emerald-400 tracking-widest">VÙNG ĐẤT KHỞI NGUYÊN</span>
+                <h3 id="worldMapTitle" class="text-2xl sm:text-3xl font-black font-hero text-white">
+                  Rừng Tri Thức (Knowledge Forest)
+                </h3>
+              </div>
+              
+              <p id="worldMapDesc" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                Nơi những đom đóm mang kiến thức cổ xưa lấp lánh giữa màn đêm. Rừng ngập tràn những chú Slime xanh dễ thương và Nấm ma thuật, rất phù hợp cho học sinh khởi động và ôn luyện các bài tập căn bản.
+              </p>
+
+              <!-- Monster Lineup -->
+              <div class="space-y-2 pt-2">
+                <span class="text-xs font-bold text-amber-300 uppercase tracking-wider block">Quái Vật Xuất Hiện:</span>
+                <div id="worldMapMonsters" class="flex items-center gap-3">
+                  <div class="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+                    <img src="/assets/monsters/slime.png" class="w-8 h-8 object-contain" />
+                    <span class="text-xs font-bold text-white">Slime Xanh</span>
+                  </div>
+                  <div class="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+                    <img src="/assets/monsters/mushroom.png" class="w-8 h-8 object-contain" />
+                    <span class="text-xs font-bold text-white">Nấm Tinh Nghịch</span>
+                  </div>
+                  <div class="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+                    <img src="/assets/monsters/wolf.png" class="w-8 h-8 object-contain" />
+                    <span class="text-xs font-bold text-white">Sói Rừng</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Strategic Battle Tip -->
+              <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-400/20 text-xs text-amber-200">
+                <strong class="font-bold">Mẹo Chiến Đấu:</strong> Trả lời nhanh trong 5 giây đầu để kích hoạt đòn đánh chí mạng nhân 1.5 lần sát thương!
+              </div>
+            </div>
+
+            <!-- CTA into map -->
+            <div class="pt-2">
+              <a href="/rpg.html" class="w-full btn-fantasy-gold py-3 rounded-xl font-black font-fantasy text-xs text-white uppercase tracking-wider flex items-center justify-center gap-2">
+                <span>⚔️</span> KHÁM PHÁ CHIẾN TRƯỜNG NÀY
+              </a>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 7. SECTION 6: CHOOSE YOUR HERO (ANH HÙNG CHIẾN TRẬN)     -->
+  <!-- ======================================================== -->
+  <section id="heroes" class="py-20 relative bg-black/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-widest">
+          🛡️ ANH HÙNG HUYỀN THOẠI
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Anh Hùng Nào Sẽ Đồng Hành Cùng Bạn?
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          Mỗi nhân vật sở hữu một chỉ số sức mạnh, tuyệt kỹ độc quyền và người bạn thú cưng bảo hộ trung thành.
+        </p>
+      </div>
+
+      <!-- 3 Hero Class Tabs -->
+      <div class="mt-12 flex justify-center gap-3">
+        <button onclick="selectHeroTab('warrior')" id="heroTab-warrior" class="hero-tab-btn px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 text-white font-black text-xs sm:text-sm font-fantasy border-2 border-amber-300 shadow-lg shadow-rose-500/30 transition flex items-center gap-2">
+          <span>⚔️</span> CHIẾN BINH (WARRIOR)
+        </button>
+        <button onclick="selectHeroTab('mage')" id="heroTab-mage" class="hero-tab-btn px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs sm:text-sm font-fantasy border border-white/10 transition flex items-center gap-2">
+          <span>🔮</span> PHÁP SƯ (MAGE)
+        </button>
+        <button onclick="selectHeroTab('archer')" id="heroTab-archer" class="hero-tab-btn px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs sm:text-sm font-fantasy border border-white/10 transition flex items-center gap-2">
+          <span>🏹</span> CUNG THỦ (ARCHER)
+        </button>
+      </div>
+
+      <!-- Active Hero Showcase Display Panel -->
+      <div class="mt-8 gilded-card p-6 sm:p-10 max-w-5xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          
+          <!-- Left: Hero Big Avatar with Aura -->
+          <div class="md:col-span-5 flex flex-col items-center justify-center relative">
+            <div id="heroAuraCircle" class="w-64 h-64 rounded-full bg-gradient-to-tr from-rose-600/30 via-amber-500/20 to-yellow-500/30 blur-xl absolute pointer-events-none"></div>
+            
+            <div class="relative z-10 flex flex-col items-center">
+              <img id="heroShowcaseImg" src="/assets/heroes/warrior.png" alt="Hero Portrait" class="w-56 h-auto drop-shadow-[0_15px_35px_rgba(245,158,11,0.6)] hero-cinematic transition-all duration-300" />
+              <div class="entity-shadow w-44 mt-[-10px]"></div>
+            </div>
+
+            <!-- Companion Pet Badge -->
+            <div class="mt-4 p-2.5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-3">
+              <img id="heroPetImg" src="/assets/pets/pet_dragon.png" class="w-10 h-10 object-contain drop-shadow" />
+              <div>
+                <div class="text-[10px] text-gray-400 uppercase font-bold">Thú Cưng Đồng Hành</div>
+                <div id="heroPetName" class="text-xs font-black text-amber-300">Long Con Thần Bí (Hệ Lửa)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Hero Stats & Skills -->
+          <div class="md:col-span-7 space-y-5">
+            <div class="space-y-1 text-left">
+              <div class="flex items-center gap-2">
+                <span id="heroRoleTag" class="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/30 text-[11px] font-black uppercase">
+                  CẬN CHIẾN & PHÒNG THỦ CAO
+                </span>
+                <span class="text-xs text-gray-400">Hệ Nguyên Tố: <strong id="heroElement" class="text-amber-400">Hỏa Long</strong></span>
+              </div>
+              <h3 id="heroName" class="text-3xl font-black font-hero text-white">
+                Hiệp Sĩ Dũng Cảm (Valiant Warrior)
+              </h3>
+              <p id="heroBio" class="text-xs text-gray-300 leading-relaxed">
+                Người mang ý chí kiên định và thanh kiếm công lý. Sở hữu lượng máu dồi dào, khả năng chịu đòn bền bỉ và những cú trảm kích bão lửa uy lực vô song.
+              </p>
+            </div>
+
+            <!-- Stat Meters -->
+            <div class="space-y-3 pt-2 text-xs font-bold text-gray-300">
+              <!-- Sức Mạnh -->
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="flex items-center gap-1.5">⚔️ Sức Mạnh (Strength)</span>
+                  <span id="heroStatStr" class="text-rose-400">95 / 100</span>
+                </div>
+                <div class="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
+                  <div id="heroBarStr" class="h-full bg-gradient-to-r from-rose-500 to-amber-500 w-[95%] transition-all duration-500"></div>
+                </div>
+              </div>
+
+              <!-- Trí Tuệ -->
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="flex items-center gap-1.5">🔮 Trí Tuệ (Intelligence)</span>
+                  <span id="heroStatInt" class="text-purple-400">65 / 100</span>
+                </div>
+                <div class="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
+                  <div id="heroBarInt" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 w-[65%] transition-all duration-500"></div>
+                </div>
+              </div>
+
+              <!-- Nhanh Nhẹn -->
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="flex items-center gap-1.5">🏹 Nhanh Nhẹn (Agility)</span>
+                  <span id="heroStatAgi" class="text-emerald-400">75 / 100</span>
+                </div>
+                <div class="w-full h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
+                  <div id="heroBarAgi" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-[75%] transition-all duration-500"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Signature Skill Box -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+              <div class="flex items-center justify-between text-xs font-black">
+                <span class="text-amber-300 flex items-center gap-1.5">
+                  <span>⚡</span> Tuyệt Kỹ: <span id="heroSkillName">Trảm Kích Bão Lửa (Flame Slash)</span>
+                </span>
+                <span class="text-purple-300">Tiêu tốn 40 MP</span>
+              </div>
+              <p id="heroSkillDesc" class="text-[11px] text-gray-400">
+                Gây 250% sát thương chí mạng lên quái vật khi người chơi trả lời đúng 3 câu liên tiếp.
+              </p>
+            </div>
+
+            <!-- CTA Select Button -->
+            <div class="pt-2">
+              <a href="/rpg.html" class="inline-flex items-center justify-center gap-2 w-full sm:w-auto btn-fantasy-gold px-8 py-3.5 rounded-xl font-black font-fantasy text-xs text-white uppercase tracking-wider">
+                <span>⚔️</span> VÀO TRẬN VỚI ANH HÙNG NÀY
+              </a>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 8. SECTION 7: REWARDS & PROGRESSION (PHẦN THƯỞNG)        -->
+  <!-- ======================================================== -->
+  <section id="rewards" class="py-20 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-widest">
+          💎 PHẦN THƯỞNG & VINH DANH
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Mỗi Nỗ Lực Đều Xứng Đáng Được Ghi Nhận
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          100% phần thưởng đến từ trí tuệ và sự chăm chỉ học tập. Không nạp thẻ, không cơ chế cờ bạc trả tiền để thắng!
+        </p>
+      </div>
+
+      <!-- Interactive Treasure Chest Box Experience -->
+      <div class="mt-14 max-w-3xl mx-auto gilded-card p-8 sm:p-10 text-center relative overflow-hidden">
+        <div class="space-y-2 mb-6">
+          <span class="text-xs font-black uppercase text-amber-400 tracking-widest">RƯƠNG THẦN THOẠI TƯƠNG TÁC</span>
+          <h3 class="text-2xl font-black text-white font-hero">
+            Bấm Vào Rương Để Khám Phá Báu Vật
+          </h3>
+          <p class="text-xs text-gray-300">
+            Mỗi khi trả lời đúng các mốc câu hỏi quan trọng, bạn sẽ nhận được một rương báu chứa đầy trang bị kỳ diệu.
+          </p>
+        </div>
+
+        <!-- Interactive Chest Component -->
+        <div class="flex flex-col items-center justify-center cursor-pointer group py-4" onclick="toggleTreasureChest()">
+          <div class="relative w-44 h-44 flex items-center justify-center">
+            <img id="treasureChestImg" src="/assets/items/chest_closed.png" alt="Rương Báu Đóng" class="w-36 h-auto drop-shadow-[0_15px_30px_rgba(245,158,11,0.6)] chest-glow group-hover:scale-105 transition transform" />
+          </div>
+          <div class="entity-shadow w-40 mt-[-10px]"></div>
+          
+          <button id="chestActionText" class="mt-4 px-5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/50 text-amber-300 font-bold text-xs uppercase tracking-wider transition">
+            ✨ BẤM ĐỂ MỞ RƯƠNG
+          </button>
+        </div>
+
+        <!-- Dropped Loot Showcase (Hidden by default, shows when chest opened) -->
+        <div id="chestLootDisplay" class="hidden mt-6 p-4 rounded-2xl bg-black/60 border border-amber-400/40 space-y-3 animate-fade-in">
+          <div class="text-xs font-black text-amber-300 uppercase tracking-widest">
+            🎉 BẠN VỪA NHẬN ĐƯỢC CÁC BÁU VẬT HIẾM:
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="p-3 rounded-xl rarity-epic flex flex-col items-center">
+              <img src="/assets/items/sword.png" class="w-10 h-10 object-contain drop-shadow" />
+              <span class="text-[11px] font-black text-purple-300 mt-1">Kiếm Hiệp Sĩ</span>
+              <span class="text-[9px] text-gray-400">+15 Sức Mạnh</span>
+            </div>
+            <div class="p-3 rounded-xl rarity-legendary flex flex-col items-center">
+              <img src="/assets/items/gold_coins.png" class="w-10 h-10 object-contain drop-shadow" />
+              <span class="text-[11px] font-black text-amber-300 mt-1">+250 Vàng</span>
+              <span class="text-[9px] text-gray-400">Tiền Thưởng Học Tập</span>
+            </div>
+            <div class="p-3 rounded-xl rarity-epic flex flex-col items-center">
+              <img src="/assets/items/mana_crystal.png" class="w-10 h-10 object-contain drop-shadow" />
+              <span class="text-[11px] font-black text-blue-300 mt-1">Tinh Thể Lam</span>
+              <span class="text-[9px] text-gray-400">+50 Năng Lượng</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Item Rarity & Gear Showcase Grid -->
+      <div class="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- Common -->
+        <div class="p-5 rounded-2xl rarity-common text-center space-y-2">
+          <div class="w-14 h-14 mx-auto flex items-center justify-center">
+            <img src="/assets/items/potion_hp.png" alt="Dược Phẩm" class="w-10 h-10 object-contain" />
+          </div>
+          <div class="text-[11px] font-black uppercase text-gray-400">VẬT PHẨM TIÊU HAO</div>
+          <div class="text-xs font-bold text-white">Bình Hồi Máu & Dược Thảo</div>
+          <p class="text-[10px] text-gray-400">Hồi phục HP khi trả lời sai câu hỏi.</p>
+        </div>
+
+        <!-- Rare -->
+        <div class="p-5 rounded-2xl rarity-rare text-center space-y-2">
+          <div class="w-14 h-14 mx-auto flex items-center justify-center">
+            <img src="/assets/items/shield.png" alt="Khiên Thánh" class="w-10 h-10 object-contain" />
+          </div>
+          <div class="text-[11px] font-black uppercase text-sky-400">TRANG BỊ HIẾM (RARE)</div>
+          <div class="text-xs font-bold text-white">Khiên Hộ Thể & Giáp Trụ</div>
+          <p class="text-[10px] text-gray-400">Giảm sát thương khi gặp câu hỏi khó.</p>
+        </div>
+
+        <!-- Epic -->
+        <div class="p-5 rounded-2xl rarity-epic text-center space-y-2">
+          <div class="w-14 h-14 mx-auto flex items-center justify-center">
+            <img src="/assets/items/spellbook.png" alt="Sách Phép" class="w-10 h-10 object-contain" />
+          </div>
+          <div class="text-[11px] font-black uppercase text-purple-400">KHO BÁU SỬ THI (EPIC)</div>
+          <div class="text-xs font-bold text-white">Sách Phép & Trượng Thần</div>
+          <p class="text-[10px] text-gray-400">Nhân 2 kinh nghiệm mỗi khi lập chuỗi combo.</p>
+        </div>
+
+        <!-- Legendary -->
+        <div class="p-5 rounded-2xl rarity-legendary text-center space-y-2">
+          <div class="w-14 h-14 mx-auto flex items-center justify-center">
+            <img src="/assets/items/trophy.png" alt="Cúp Vinh Danh" class="w-10 h-10 object-contain" />
+          </div>
+          <div class="text-[11px] font-black uppercase text-amber-400">HUYỀN THOẠI (LEGENDARY)</div>
+          <div class="text-xs font-bold text-white">Cúp Trạng Nguyên & Vương Miện</div>
+          <p class="text-[10px] text-gray-400">Vinh danh trên bảng vàng của cả trường.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 9. SECTION 8: FOR TEACHERS (DÀNH CHO THẦY CÔ)           -->
+  <!-- ======================================================== -->
+  <section id="teachers" class="py-20 relative bg-[#130728]/90 border-t border-b border-purple-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-black uppercase tracking-widest">
+          ✏️ DÀNH CHO THẦY CÔ & NHÀ GIÁO DỤC
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black font-fantasy text-white">
+          Thầy Cô Soạn Bộ Đề – Học Sinh Tạo Nên Kỳ Tích
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300">
+          Chủ động 100% nội dung giảng dạy. Công cụ chuyên nghiệp giúp thầy cô biến giờ kiểm tra áp lực thành một giải đấu hào hứng nhất năm học!
+        </p>
+      </div>
+
+      <!-- Teacher Benefits 4 Grid -->
+      <div class="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="p-6 rounded-2xl bg-white/5 border border-purple-500/30 space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-purple-600/30 flex items-center justify-center text-2xl border border-purple-400/30">
+            ✍️
+          </div>
+          <h4 class="text-base font-black text-white">Tự Do Soạn 30 Câu Hỏi</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Nhập câu hỏi, 4 phương án lựa chọn và giải thích đáp án. Thầy cô toàn quyền kiểm soát tính sư phạm, không phụ thuộc vào câu hỏi AI tự sinh.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-purple-500/30 space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-amber-600/30 flex items-center justify-center text-2xl border border-amber-400/30">
+            📐
+          </div>
+          <h4 class="text-base font-black text-white">Công Thức Toán Chuẩn KaTeX</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Hỗ trợ hiển thị phân số, lũy thừa, căn bậc hai, ký hiệu hình học và phương trình hóa học sắc nét như sách giáo khoa.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-purple-500/30 space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-emerald-600/30 flex items-center justify-center text-2xl border border-emerald-400/30">
+            💾
+          </div>
+          <h4 class="text-base font-black text-white">Tải Lên / Xuất File Nhanh</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Nhập đề nhanh từ file JSON hoặc xuất đề ra máy tính để tái sử dụng cho các năm học tiếp theo hoặc chia sẻ cho đồng nghiệp.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-purple-500/30 space-y-3">
+          <div class="w-12 h-12 rounded-xl bg-rose-600/30 flex items-center justify-center text-2xl border border-rose-400/30">
+            🎮
+          </div>
+          <h4 class="text-base font-black text-white">Tích Hợp Cả 2 Chế Độ</h4>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Bộ đề của thầy cô được nạp ngay vào Chế độ RPG 30 câu để học sinh tự luyện, hoặc dùng chiếu lên máy chiếu lớp học để thi đấu đồng đội.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Studio Mockup Card -->
+      <div class="mt-12 p-6 sm:p-8 rounded-3xl bg-black/60 border-2 border-purple-500/40 backdrop-blur-md flex flex-col lg:flex-row items-center justify-between gap-8">
+        <div class="space-y-3 max-w-xl text-center lg:text-left">
+          <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-black uppercase">
+            STUDIO QUẢN LÝ BỘ CÂU HỎI
+          </span>
+          <h3 class="text-2xl font-black text-white font-hero">
+            Trải Nghiệm Trình Biên Soạn Đề Chuyên Nghiệp Ngay
+          </h3>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Giao diện thân thiện, dễ sử dụng cho mọi môn học từ Tiểu học đến Trung học cơ sở. Chỉ mất 5 phút để tạo một bộ đề phiêu lưu 30 câu hỏi hoàn chỉnh.
+          </p>
+          <div class="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+            <a href="/creator.html" class="btn-fantasy-purple px-6 py-3.5 rounded-xl font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
+              <span>✏️</span> MỞ TRANG QUẢN LÝ BỘ CÂU HỎI
+            </a>
+            <a href="/host.html" class="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition flex items-center gap-2">
+              <span>💻</span> Mở Phòng Chiếu Cho Lớp
+            </a>
+          </div>
+        </div>
+
+        <!-- Studio Mini Visual Preview -->
+        <div class="w-full lg:w-96 rounded-2xl bg-[#1b0d36] border border-purple-400/40 p-4 space-y-3 shadow-xl">
+          <div class="flex items-center justify-between text-xs font-black text-purple-300 border-b border-white/10 pb-2">
+            <span>📝 BỘ ĐỀ MẪU: TOÁN 30 CÂU</span>
+            <span class="text-emerald-400">30 / 30 Câu ✓</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-black/40 text-xs text-gray-300 font-mono">
+            Câu 1: Cho biểu thức \( 15 \times 4 + 20 \). Giá trị là bao nhiêu?
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="p-2 rounded bg-blue-900/40 border border-blue-400/30 text-white">A: 60</div>
+            <div class="p-2 rounded bg-emerald-900/40 border border-emerald-400 text-emerald-200 font-bold">B: 80 (Đúng) ✓</div>
+            <div class="p-2 rounded bg-purple-900/40 border border-purple-400/30 text-white">C: 100</div>
+            <div class="p-2 rounded bg-rose-900/40 border border-rose-400/30 text-white">D: 75</div>
+          </div>
+          <div class="text-[10px] text-gray-400 text-right">
+            Trạng thái: Đã sẵn sàng cho học sinh chiến đấu
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 10. SECTION 9: FINAL CALL TO ACTION (HIỆU TRIỆU ANH HÙNG) -->
+  <!-- ======================================================== -->
+  <section class="py-24 relative overflow-hidden text-center">
+    <!-- Glowing background elements -->
+    <div class="absolute inset-0 bg-gradient-to-t from-[#0d051e] via-[#1a0833] to-[#0d051e]"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-r from-amber-500/20 via-purple-600/30 to-rose-500/20 blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
+      
+      <!-- 3 Heroes Group Artwork -->
+      <div class="flex items-end justify-center gap-3">
+        <img src="/assets/heroes/mage.png" alt="Mage" class="w-20 sm:w-24 h-auto drop-shadow-xl" />
+        <img src="/assets/heroes/warrior.png" alt="Warrior" class="w-32 sm:w-36 h-auto drop-shadow-2xl z-10" />
+        <img src="/assets/heroes/archer.png" alt="Archer" class="w-20 sm:w-24 h-auto drop-shadow-xl" />
+      </div>
+
+      <div class="space-y-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-black uppercase tracking-widest">
+          ⭐ SẴN SÀNG CHO HÀNH TRÌNH TRI THỨC?
+        </div>
+        <h2 class="text-3xl sm:text-5xl font-black font-fantasy text-white leading-tight">
+          Hành Trình Của Một Anh Hùng<br />
+          <span class="bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 bg-clip-text text-transparent text-glow-gold">
+            Bắt Đầu Từ Kiến Thức!
+          </span>
+        </h2>
+        <p class="text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          Đừng để việc học chỉ là những trang sách tĩnh lặng. Hãy hóa thân thành anh hùng, cùng đồng đội vượt qua mọi câu hỏi hóc búa và lưu danh bảng vàng EduQuest ngay hôm nay!
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+        <a href="/rpg.html" onclick="EduAudio.playClick()" class="w-full sm:w-auto btn-fantasy-gold px-10 py-4 rounded-2xl font-black font-fantasy text-sm text-white uppercase tracking-wider flex items-center justify-center gap-3 shadow-2xl">
+          <img src="/assets/items/sword.png" class="w-6 h-6 object-contain" />
+          <span>BẮT ĐẦU PHIÊU LƯU MIỄN PHÍ</span>
+        </a>
+        <a href="/creator.html" onclick="EduAudio.playClick()" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-amber-400/40 text-amber-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition hover:scale-105">
+          <span>✏️</span> Soạn Bộ 30 Câu Cho Lớp
+        </a>
+      </div>
+
+      <div class="pt-4 text-xs text-gray-400">
+        Khởi chạy ngay trên trình duyệt máy tính, máy tính bảng và điện thoại di động &bull; Không cần cài đặt app
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================== -->
+  <!-- 11. FOOTER                                               -->
+  <!-- ======================================================== -->
+  <footer class="w-full bg-[#070210] border-t border-white/10 py-12 text-gray-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        
+        <!-- Col 1: Brand Info -->
+        <div class="space-y-3 md:col-span-1">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center p-1">
+              <img src="/assets/items/sword.png" class="w-5 h-5 object-contain" />
+            </div>
+            <span class="text-lg font-black font-fantasy text-amber-300">EduQuest</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Học Viện Phiêu Lưu – Nền tảng game RPG 2D giáo dục kết hợp đấu trường lớp học thời gian thực hàng đầu.
+          </p>
+        </div>
+
+        <!-- Col 2: Game Modes -->
+        <div class="space-y-2">
+          <h5 class="text-xs font-black uppercase text-white tracking-wider">Chế Độ Trò Chơi</h5>
+          <ul class="space-y-1.5 text-xs">
+            <li><a href="/rpg.html?mode=map" class="hover:text-amber-300 transition">🧭 Phiêu Lưu Bản Đồ 10 Ải</a></li>
+            <li><a href="/rpg.html?mode=journey" class="hover:text-amber-300 transition">⚡ Hành Trình 30 Câu Hỏi</a></li>
+            <li><a href="/host.html" class="hover:text-amber-300 transition">💻 Màn Chiếu Host Giáo Viên</a></li>
+            <li><a href="/player.html" class="hover:text-amber-300 transition">📱 Điện Thoại Học Sinh (PIN)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Teacher Tools -->
+        <div class="space-y-2">
+          <h5 class="text-xs font-black uppercase text-white tracking-wider">Công Cụ Giảng Dạy</h5>
+          <ul class="space-y-1.5 text-xs">
+            <li><a href="/creator.html" class="hover:text-amber-300 transition">✏️ Quản Lý Bộ Câu Hỏi (30 Câu)</a></li>
+            <li><a href="/creator.html#export" class="hover:text-amber-300 transition">💾 Xuất / Nhập File Đề Thi</a></li>
+            <li><a href="/creator.html#katex" class="hover:text-amber-300 transition">📐 Soạn Thảo Công Thức KaTeX</a></li>
+            <li><a href="#how-it-works" class="hover:text-amber-300 transition">📜 Hướng Dẫn Dành Cho Giáo Viên</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Values & Safety -->
+        <div class="space-y-2">
+          <h5 class="text-xs font-black uppercase text-white tracking-wider">Cam Kết Giáo Dục</h5>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            100% Nội dung an toàn, không quảng cáo độc hại, không mua bán vật phẩm bằng tiền thật. Thiết kế vì sự tiến bộ của học sinh.
+          </p>
+          <div class="pt-2 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold">
+              ✓ An Toàn Học Đường
+            </span>
+            <span class="px-2 py-0.5 rounded bg-purple-950 border border-purple-500/40 text-purple-300 text-[10px] font-bold">
+              ✓ Chuẩn Sư Phạm
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copyright & Back to Top -->
+      <div class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500">
+        <div>
+          © 2026 EduQuest: Học Viện Phiêu Lưu. All rights reserved. Thiết kế dành cho học sinh và thầy cô Việt Nam.
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="#top" class="hover:text-amber-400 transition flex items-center gap-1">
+            <span>⬆</span> Về Đầu Trang
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: SOUND SYNTHESIZER & INTERACTIVE COMPONENTS   -->
+  <!-- ======================================================== -->
+  <script>
+    /* ======================================================== */
+    /* 1. AUDIO SYNTHESIZER (ZERO-DEPENDENCY WEB AUDIO API)     */
+    /* ======================================================== */
+    let isSoundMuted = false;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    const EduAudio = {
+      playClick() {
+        if (isSoundMuted) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(480, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+        } catch(e) {}
+      },
+
+      playSlash() {
+        if (isSoundMuted) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+          // Noise sweep slash
+          const bufferSize = ctx.sampleRate * 0.15;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+          }
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1200, ctx.currentTime);
+          filter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          noise.start();
+        } catch(e) {}
+      },
+
+      playHit() {
+        if (isSoundMuted) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.35, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } catch(e) {}
+      },
+
+      playChest() {
+        if (isSoundMuted) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.08 + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.08);
+            osc.stop(ctx.currentTime + idx * 0.08 + 0.25);
+          });
+        } catch(e) {}
+      },
+
+      playVictory() {
+        if (isSoundMuted) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+          const fanfare = [
+            { f: 523.25, t: 0.0, d: 0.12 },
+            { f: 659.25, t: 0.12, d: 0.12 },
+            { f: 783.99, t: 0.24, d: 0.12 },
+            { f: 1046.50, t: 0.36, d: 0.4 }
+          ];
+          fanfare.forEach(item => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(item.f, ctx.currentTime + item.t);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime + item.t);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + item.t + item.d);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + item.t);
+            osc.stop(ctx.currentTime + item.t + item.d);
+          });
+        } catch(e) {}
+      }
+    };
+
+    function toggleMute() {
+      isSoundMuted = !isSoundMuted;
+      const icon = document.getElementById('soundIcon');
+      if (icon) {
+        icon.innerText = isSoundMuted ? '🔇' : '🔊';
+      }
+      if (!isSoundMuted) {
+        EduAudio.playClick();
+      }
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      if (menu) {
+        menu.classList.toggle('hidden');
+      }
+    }
+
+
+    /* ======================================================== */
+    /* 2. SECTION 3: INTERACTIVE MINI-BATTLE SIMULATOR          */
+    /* ======================================================== */
+    const sampleQuestions = [
+      {
+        category: "Toán Học - Bảng Cửu Chương",
+        question: "Kết quả của phép tính: 7 × 8 = ?",
+        options: ["54", "56", "64", "48"],
+        correctIndex: 1,
+        damage: 65
+      },
+      {
+        category: "Lịch Sử & Địa Lý Việt Nam",
+        question: "Thủ đô của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam là gì?",
+        options: ["Đà Nẵng", "TP. Hồ Chí Minh", "Hà Nội", "Hải Phòng"],
+        correctIndex: 2,
+        damage: 80
+      },
+      {
+        category: "Khoa Học Tự Nhiên",
+        question: "Khí nào cây xanh hấp thụ trong quá trình quang hợp?",
+        options: ["Khí Oxy", "Khí Carbonic (CO2)", "Khí Nitơ", "Khí Hydro"],
+        correctIndex: 1,
+        damage: 75
+      }
+    ];
+
+    let currentQIndex = 0;
+    let monsterHp = 100;
+    let heroHp = 130;
+    let previewScore = 120;
+    let previewCombo = 1;
+
+    function loadQuestion(idx) {
+      currentQIndex = idx;
+      const q = sampleQuestions[idx];
+      document.getElementById('questionCategory').innerText = q.category;
+      document.getElementById('questionTitle').innerText = q.question;
+      document.getElementById('btnTextA').innerText = q.options[0];
+      document.getElementById('btnTextB').innerText = q.options[1];
+      document.getElementById('btnTextC').innerText = q.options[2];
+      document.getElementById('btnTextD').innerText = q.options[3];
+
+      // Update active tabs
+      const tabs = document.querySelectorAll('.q-tab');
+      tabs.forEach((tab, i) => {
+        if (i === idx) {
+          tab.className = "q-tab px-2 py-0.5 rounded bg-amber-500 text-black font-bold";
+        } else {
+          tab.className = "q-tab px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20";
+        }
+      });
+
+      // Clear feedback banner
+      const feedback = document.getElementById('battleFeedback');
+      feedback.className = "hidden p-3 rounded-xl text-center text-xs font-black transition-all";
+      feedback.innerText = "";
+    }
+
+    function submitAnswer(chosenIdx) {
+      const q = sampleQuestions[currentQIndex];
+      const feedback = document.getElementById('battleFeedback');
+      const hero = document.getElementById('previewHero');
+      const monster = document.getElementById('previewMonster');
+
+      if (chosenIdx === q.correctIndex) {
+        // === CORRECT ANSWER ===
+        EduAudio.playSlash();
+        setTimeout(() => EduAudio.playHit(), 200);
+
+        // Hero attacks (forward rush anim)
+        hero.classList.add('hero-attacking-anim');
+        setTimeout(() => hero.classList.remove('hero-attacking-anim'), 500);
+
+        // Slash VFX across slime
+        const slashArea = document.getElementById('slashEffectArea');
+        slashArea.innerHTML = `
+          <div class="w-32 h-2 bg-gradient-to-r from-transparent via-amber-300 to-transparent rotate-[-45deg] scale-150 animate-slash-blade"></div>
+        `;
+        setTimeout(() => slashArea.innerHTML = '', 450);
+
+        // Monster damaged shake
+        monster.classList.add('boss-damaged-anim');
+        setTimeout(() => monster.classList.remove('boss-damaged-anim'), 550);
+
+        // Floating Damage Number
+        spawnFloatingDamage(`-${q.damage} SÁT THƯƠNG!`, '#fbbf24');
+
+        // Reduce monster HP
+        monsterHp = Math.max(0, monsterHp - q.damage);
+        document.getElementById('monsterHpBar').style.width = monsterHp + '%';
+        document.getElementById('monsterHpText').innerText = monsterHp + '/100';
+
+        // Update score & combo
+        previewScore += q.damage * previewCombo;
+        previewCombo += 1;
+        document.getElementById('previewScore').innerText = previewScore;
+        document.getElementById('previewCombo').innerText = 'x' + previewCombo;
+
+        feedback.className = "p-3 rounded-xl text-center text-xs font-black bg-emerald-950/90 border border-emerald-400 text-emerald-300 block";
+        feedback.innerHTML = `✨ CHÍNH XÁC! Bạn tung tuyệt kỹ gây <strong>${q.damage}</strong> sát thương! Combo tăng lên <strong>x${previewCombo}</strong>!`;
+
+        // Check if monster dies
+        if (monsterHp <= 0) {
+          setTimeout(() => {
+            EduAudio.playVictory();
+            document.getElementById('answerButtonsGrid').classList.add('hidden');
+            document.getElementById('victoryBanner').classList.remove('hidden');
+            monster.style.opacity = '0.3';
+            monster.style.filter = 'grayscale(1)';
+          }, 600);
+        }
+
+      } else {
+        // === WRONG ANSWER ===
+        EduAudio.playHit();
+        heroHp = Math.max(0, heroHp - 15);
+        document.getElementById('heroHpBar').style.width = (heroHp / 130 * 100) + '%';
+        document.getElementById('heroHpText').innerText = heroHp + '/130';
+
+        // Hero flinch
+        hero.classList.add('boss-damaged-anim');
+        setTimeout(() => hero.classList.remove('boss-damaged-anim'), 400);
+
+        // Reset combo
+        previewCombo = 1;
+        document.getElementById('previewCombo').innerText = 'x1';
+
+        spawnFloatingDamage('-15 HP', '#ef4444');
+
+        feedback.className = "p-3 rounded-xl text-center text-xs font-black bg-rose-950/90 border border-rose-400 text-rose-300 block";
+        feedback.innerHTML = `❌ Chưa chính xác! Quái vật phản đòn làm bạn mất 15 HP! Hãy đọc kỹ và thử lại nhé!`;
+      }
+    }
+
+    function spawnFloatingDamage(text, color) {
+      const layer = document.getElementById('damageLayer');
+      const div = document.createElement('div');
+      div.className = "damage-float text-sm sm:text-base";
+      div.style.color = color;
+      div.style.right = "25%";
+      div.style.bottom = "50%";
+      div.innerText = text;
+      layer.appendChild(div);
+      setTimeout(() => div.remove(), 1300);
+    }
+
+    function resetPreviewBattle() {
+      monsterHp = 100;
+      heroHp = 130;
+      document.getElementById('monsterHpBar').style.width = '100%';
+      document.getElementById('monsterHpText').innerText = '100/100';
+      document.getElementById('heroHpBar').style.width = '100%';
+      document.getElementById('heroHpText').innerText = '130/130';
+      
+      const monster = document.getElementById('previewMonster');
+      monster.style.opacity = '1';
+      monster.style.filter = 'none';
+
+      document.getElementById('victoryBanner').classList.add('hidden');
+      document.getElementById('answerButtonsGrid').classList.remove('hidden');
+      loadQuestion((currentQIndex + 1) % sampleQuestions.length);
+    }
+
+
+    /* ======================================================== */
+    /* 3. SECTION 5: WORLD MAP EXPLORER DATA                    */
+    /* ======================================================== */
+    const worldMapsData = {
+      forest: {
+        title: "Rừng Tri Thức (Knowledge Forest)",
+        badge: "VÙNG ĐẤT KHỞI NGUYÊN",
+        desc: "Nơi những đom đóm mang tri thức cổ xưa lấp lánh giữa màn đêm. Rừng ngập tràn những chú Slime xanh dễ thương và Nấm ma thuật, rất phù hợp cho học sinh khởi động và ôn luyện các bài tập căn bản.",
+        image: "/assets/maps/map_forest.jpg",
+        stars: "★☆☆☆☆",
+        monsters: [
+          { name: "Slime Xanh", img: "/assets/monsters/slime.png" },
+          { name: "Nấm Tinh Nghịch", img: "/assets/monsters/mushroom.png" },
+          { name: "Sói Rừng", img: "/assets/monsters/wolf.png" }
+        ]
+      },
+      cave: {
+        title: "Hang Động Bí Ẩn (Mystic Cavern)",
+        badge: "VÙNG ĐẤT THẠCH NHŨ",
+        desc: "Lối đi sâu trong lòng đất phát quang những thỏi thạch anh lam ngọc. Địa hình hiểm trở với những loài quái vật bóng đêm, đòi hỏi học sinh phải suy luận logic và tính toán cẩn trọng.",
+        image: "/assets/maps/map_cave.png",
+        stars: "★★☆☆☆",
+        monsters: [
+          { name: "Dơi Hút Máu", img: "/assets/monsters/bat.png" },
+          { name: "Nhện Độc", img: "/assets/monsters/spider.png" },
+          { name: "Golem Đá", img: "/assets/monsters/golem.png" }
+        ]
+      },
+      castle: {
+        title: "Lâu Đài Bóng Tối (Dark Citadel)",
+        badge: "CHIẾN ĐỊA CỔ XƯA",
+        desc: "Pháo đài cổ kính bị bao phủ bởi làn sương ma thuật tím. Nơi ngự trị của các pháp sư hắc ám và kỵ sĩ bóng tối, mang đến các thử thách câu hỏi nâng cao đầy kịch tính.",
+        image: "/assets/maps/map_castle.jpg",
+        stars: "★★★★☆",
+        monsters: [
+          { name: "Vua Slime", img: "/assets/monsters/king_slime.png" },
+          { name: "Phù Thủy Hắc Ám", img: "/assets/monsters/dark_wizard.png" }
+        ]
+      },
+      volcano: {
+        title: "Núi Lửa Rồng Thiêng (Dragon Volcano)",
+        badge: "ĐẤU TRƯỜNG HUYỀN THOẠI",
+        desc: "Miệng núi lửa sôi sục dòng dung nham đỏ rực. Đây là sào huyệt của Đại Hỏa Long Khổng Lồ – Boss Cuối của học viện. Chỉ những anh hùng trả lời chính xác trọn vẹn mới có thể khắc chế được ngọn lửa rồng!",
+        image: "/assets/maps/map_volcano.png",
+        stars: "★★★★★",
+        monsters: [
+          { name: "Hỏa Long Bất Diệt", img: "/assets/monsters/fire_dragon.png" }
+        ]
+      }
+    };
+
+    function switchWorldMap(key) {
+      EduAudio.playClick();
+      const map = worldMapsData[key];
+      if (!map) return;
+
+      document.getElementById('worldMapImg').src = map.image;
+      document.getElementById('worldMapTitle').innerText = map.title;
+      document.getElementById('worldMapBadge').innerText = map.badge;
+      document.getElementById('worldMapDesc').innerText = map.desc;
+      document.getElementById('worldMapStars').innerText = map.stars;
+
+      // Render monsters
+      const container = document.getElementById('worldMapMonsters');
+      container.innerHTML = map.monsters.map(m => `
+        <div class="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
+          <img src="${m.img}" class="w-8 h-8 object-contain" />
+          <span class="text-xs font-bold text-white">${m.name}</span>
+        </div>
+      `).join('');
+
+      // Update tab styles
+      ['forest', 'cave', 'castle', 'volcano'].forEach(k => {
+        const btn = document.getElementById('tab-map-' + k);
+        if (k === key) {
+          btn.className = "map-tab-btn px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs border border-emerald-300 flex items-center gap-2 shadow-lg transition";
+        } else {
+          btn.className = "map-tab-btn px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 flex items-center gap-2 transition";
+        }
+      });
+    }
+
+
+    /* ======================================================== */
+    /* 4. SECTION 6: HERO SWITCHER DATA                         */
+    /* ======================================================== */
+    const heroesData = {
+      warrior: {
+        name: "Hiệp Sĩ Dũng Cảm (Valiant Warrior)",
+        roleTag: "CẬN CHIẾN & PHÒNG THỦ CAO",
+        element: "Hỏa Long (Lửa & Đất)",
+        bio: "Người mang ý chí kiên định và thanh kiếm công lý. Sở hữu lượng máu dồi dào, khả năng chịu đòn bền bỉ và những cú trảm kích bão lửa uy lực vô song.",
+        image: "/assets/heroes/warrior.png",
+        petName: "Long Con Thần Bí (Hệ Lửa)",
+        petImg: "/assets/pets/pet_dragon.png",
+        str: 95,
+        int: 65,
+        agi: 75,
+        skillName: "Trảm Kích Bão Lửa (Flame Slash)",
+        skillDesc: "Gây 250% sát thương chí mạng lên quái vật khi người chơi trả lời đúng 3 câu liên tiếp."
+      },
+      mage: {
+        name: "Pháp Sư Tối Thượng (Arch Mage)",
+        roleTag: "PHÉP DIỆN RỘNG & TRÍ TUỆ TUYỆT ĐỈNH",
+        element: "Băng Lam & Sấm Sét",
+        bio: "Bậc thầy thao túng các nguyên tố ma thuật huyền bí. Khả năng tích lũy năng lượng MP cực nhanh và thi triển các phép thuật quét sạch toàn bộ quái vật trên sàn đấu.",
+        image: "/assets/heroes/mage.png",
+        petName: "Mèo Pháp Thuật Cổ Xưa (Hệ Băng)",
+        petImg: "/assets/pets/pet_cat.png",
+        str: 55,
+        int: 98,
+        agi: 80,
+        skillName: "Thiên Thạch Băng Giá (Meteor Frost)",
+        skillDesc: "Tạo vụ nổ ma thuật băng giá làm đóng băng đối thủ và gây sát thương diện rộng."
+      },
+      archer: {
+        name: "Cung Thủ Thần Tốc (Wind Ranger)",
+        roleTag: "XẠ THỦ TẦM XA & TỐC ĐỘ BẠO KÍCH",
+        element: "Phong Lôi (Gió & Tự Nhiên)",
+        bio: "Đôi mắt tinh tường nhìn thấu mọi góc khuất. Mỗi mũi tên bắn ra đều mang theo sức mạnh của cuồng phong, tốc độ ra đòn nhanh nhất học viện với tỷ lệ chí mạng vượt trội.",
+        image: "/assets/heroes/archer.png",
+        petName: "Cáo Băng Tuyết Tinh Nhanh (Hệ Gió)",
+        petImg: "/assets/pets/pet_fox.png",
+        str: 70,
+        int: 80,
+        agi: 98,
+        skillName: "Mưa Tên Xuyên Phá (Arrow Rain)",
+        skillDesc: "Bắn ra hàng trăm mũi tên ánh sáng liên hoàn, nhân 3 sát thương nếu trả lời nhanh dưới 3 giây."
+      }
+    };
+
+    function selectHeroTab(heroKey) {
+      EduAudio.playClick();
+      const hero = heroesData[heroKey];
+      if (!hero) return;
+
+      document.getElementById('heroShowcaseImg').src = hero.image;
+      document.getElementById('heroPetImg').src = hero.petImg;
+      document.getElementById('heroPetName').innerText = hero.petName;
+      document.getElementById('heroRoleTag').innerText = hero.roleTag;
+      document.getElementById('heroElement').innerText = hero.element;
+      document.getElementById('heroName').innerText = hero.name;
+      document.getElementById('heroBio').innerText = hero.bio;
+
+      document.getElementById('heroStatStr').innerText = hero.str + ' / 100';
+      document.getElementById('heroBarStr').style.width = hero.str + '%';
+      document.getElementById('heroStatInt').innerText = hero.int + ' / 100';
+      document.getElementById('heroBarInt').style.width = hero.int + '%';
+      document.getElementById('heroStatAgi').innerText = hero.agi + ' / 100';
+      document.getElementById('heroBarAgi').style.width = hero.agi + '%';
+
+      document.getElementById('heroSkillName').innerText = hero.skillName;
+      document.getElementById('heroSkillDesc').innerText = hero.skillDesc;
+
+      // Update button styles
+      ['warrior', 'mage', 'archer'].forEach(k => {
+        const tab = document.getElementById('heroTab-' + k);
+        if (k === heroKey) {
+          tab.className = "hero-tab-btn px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 text-white font-black text-xs sm:text-sm font-fantasy border-2 border-amber-300 shadow-lg shadow-rose-500/30 transition flex items-center gap-2";
+        } else {
+          tab.className = "hero-tab-btn px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs sm:text-sm font-fantasy border border-white/10 transition flex items-center gap-2";
+        }
+      });
+    }
+
+
+    /* ======================================================== */
+    /* 5. SECTION 7: INTERACTIVE TREASURE CHEST                 */
+    /* ======================================================== */
+    let isChestOpen = false;
+
+    function toggleTreasureChest() {
+      const chestImg = document.getElementById('treasureChestImg');
+      const actionText = document.getElementById('chestActionText');
+      const lootDisplay = document.getElementById('chestLootDisplay');
+
+      isChestOpen = !isChestOpen;
+
+      if (isChestOpen) {
+        EduAudio.playChest();
+        chestImg.src = "/assets/items/chest_open.png";
+        actionText.innerText = "✨ ĐÓNG LẠI RƯƠNG";
+        actionText.className = "mt-4 px-5 py-2 rounded-xl bg-purple-500/30 border border-purple-400 text-purple-200 font-bold text-xs uppercase tracking-wider transition";
+        lootDisplay.classList.remove('hidden');
+      } else {
+        EduAudio.playClick();
+        chestImg.src = "/assets/items/chest_closed.png";
+        actionText.innerText = "✨ BẤM ĐỂ MỞ RƯƠNG";
+        actionText.className = "mt-4 px-5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/50 text-amber-300 font-bold text-xs uppercase tracking-wider transition";
+        lootDisplay.classList.add('hidden');
+      }
+    }
+
+    /* ======================================================== */
+    /* 6. AUTH STATUS IN TOP NAV BAR                            */
+    /* ======================================================== */
+    function updateIndexAuthStatus() {
+      const container = document.getElementById('indexAuthContainer');
+      if (!container || !window.EduQuestAuth) return;
+      const user = window.EduQuestAuth.getUser();
+      if (user) {
+        const roleLabel = user.role === 'admin' ? 'Quản Trị' : (user.role === 'teacher' ? 'Giáo Viên' : 'Học Sinh');
+        const roleBg = user.role === 'admin' ? 'bg-red-500 text-white' : (user.role === 'teacher' ? 'bg-purple-600 text-white' : 'bg-emerald-600 text-white');
+        container.innerHTML = `
+          <a href="/rpg.html" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-amber-400/40 text-xs hover:bg-white/15 transition shadow-sm">
+            <span class="px-2 py-0.5 rounded text-[10px] font-black ${roleBg}">${roleLabel}</span>
+            <span class="font-bold text-amber-200 max-w-[100px] truncate">${user.display_name}</span>
+          </a>
+        `;
+      } else {
+        container.innerHTML = `
+          <a href="/rpg.html" class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 font-bold text-xs flex items-center gap-1.5 transition">
+            <span>👤</span> <span>Đăng Nhập</span>
+          </a>
+        `;
+      }
+    }
+
+    if (window.EduQuestAuth) {
+      window.EduQuestAuth.onAuthChange(updateIndexAuthStatus);
+      updateIndexAuthStatus();
+    }
+  </script>
+
+</body>
+</html>
